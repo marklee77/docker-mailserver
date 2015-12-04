@@ -1,0 +1,6 @@
+dovecot:
+    build: dovecot
+    links:
+        - solr
+solr:
+    build: solr

@@ -10,4 +10,3 @@ ADD solr-schema.xml /opt/solr/server/solr/dovecot/conf/schema.xml
 RUN chown solr:solr /opt/solr/server/solr/dovecot/conf/schema.xml
 RUN chmod 644 /opt/solr/server/solr/dovecot/conf/schema.xml
 USER solr
-
