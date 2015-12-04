@@ -2,8 +2,11 @@
 : ${mailserver_fqdn:=localhost.localdomain}
 : ${mailserver_domain:=localdomain}
 : ${mailserver_subdomain_list:=www ftp mail}
+: ${mailserver_ssl_cert_file:=/etc/ssl/certs/ssl-cert-snakeoil.pem}
+: ${mailserver_ssl_key_file:=/etc/ssl/private/ssl-cert-snakeoil.key}
 : ${mailserver_rbl_list:=zen.spamhaus.org psbl.surriel.com dnsbl.sorbs.net}
 : ${mailserver_rhsbl_list:=rhsbl.sorbs.net}
+
 
 cat > /etc/postfix/master.cf <<EOF
 # Postfix master process configuration file.  For details on the format
@@ -84,8 +87,8 @@ biff = no
 
 ${mailserver_relay_host:+relayhost = $mailserver_relay_host}
 
-${mailserver_fqdn:+myhostname = $mailserver_fqdn}
-${mailserver_domain:+mydomain = $mailserver_domain}
+myhostname = $mailserver_fqdn
+mydomain = $mailserver_domain
 myorigin = \$mydomain
 
 # RECEIVING MAIL

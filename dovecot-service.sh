@@ -1,5 +1,7 @@
 #!/bin/bash
 
+: ${mailserver_ssl_cert_file:=/etc/ssl/certs/ssl-cert-snakeoil.pem}
+: ${mailserver_ssl_key_file:=/etc/ssl/private/ssl-cert-snakeoil.key}
 : ${mailserver_maildir_name:=Maildir}
 
 cat > /etc/dovecot/dovecot.conf <<EOF
@@ -7,8 +9,8 @@ protocols = imap pop3 sieve lmtp
 
 ssl = required
 ssl_cipher_list = ALL:!LOW:!SSLv2:ALL:!aNULL:!ADH:!eNULL:!EXP:RC4+RSA:+HIGH:+MEDIUM
-${mailserver_ssl_cert_file:+ssl_cert = <$mailserver_ssl_cert_file}
-${mailserver_ssl_key_file:+ssl_key = <$mailserver_ssl_key_file}
+ssl_cert = <$mailserver_ssl_cert_file
+ssl_key = <$mailserver_ssl_key_file
 
 auth_mechanisms = plain login
 auth_username_format = %Ln
