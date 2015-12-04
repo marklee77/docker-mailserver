@@ -1,0 +1,6 @@
+- virtual users in ldap
+- provide full text search
+- filtering with sieve
+- look at different auth methods..
+- want replication
+- need some way to provide/manage ssl certificates
