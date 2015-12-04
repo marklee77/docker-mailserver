@@ -14,8 +14,11 @@ RUN apt-get update && \
         solr-tomcat && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
+RUN mkdir /etc/service/dovecot
+ADD dovecot-service.sh /etc/service/dovecot/run
+
 # data volumes
-VOLUME [ "/home", "/tmp", "/var/log", ]
+VOLUME [ "/var/log", ]
 
 # interface ports
 # EXPOSE 25 587
