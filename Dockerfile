@@ -17,11 +17,15 @@ RUN apt-get update && \
         postfix-policyd-spf-python && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
+
+RUN mkdir /etc/service/postfix
+ADD services/postfix.sh /etc/service/postfix/run
+
 RUN mkdir /etc/service/dovecot
 ADD services/dovecot.sh /etc/service/dovecot/run
 
 # data volumes
-VOLUME [ "/var/log", ]
+VOLUME [ "/var/log" ]
 
 # interface ports
-# EXPOSE 25 587
+EXPOSE 25 143 587
