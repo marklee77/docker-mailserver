@@ -11,11 +11,14 @@ RUN apt-get update && \
         dovecot-managesieved \
         dovecot-pop3d \
         dovecot-sieve \
-        solr-tomcat && \
+        mailutils \
+        postfix \
+        postfix-pcre \
+        postfix-policyd-spf-python && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
 RUN mkdir /etc/service/dovecot
-ADD dovecot-service.sh /etc/service/dovecot/run
+ADD services/dovecot.sh /etc/service/dovecot/run
 
 # data volumes
 VOLUME [ "/var/log", ]

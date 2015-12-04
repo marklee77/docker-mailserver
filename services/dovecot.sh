@@ -69,7 +69,7 @@ plugin {
   
   # fts solr configuration
   fts = solr
-  fts_solr = url=http://${SOLR_PORT_8983_TCP_ADDRESS}:${SOLR_PORT_8983_TCP_PORT}/solr/
+  fts_solr = url=http://${SOLR_PORT_8983_TCP_ADDR}:${SOLR_PORT_8983_TCP_PORT}/solr/
 
   # sieve configuration
   sieve = ~/.dovecot.sieve

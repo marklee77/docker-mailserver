@@ -1,3 +1,6 @@
+- probably makes most sense to have postfix, dovecot, milters in single
+  container and then links to ldap, postgres, solr
+
 - virtual users in ldap
 - provide full text search
 - filtering with sieve
