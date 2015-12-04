@@ -7,7 +7,6 @@
 : ${mailserver_rbl_list:=zen.spamhaus.org psbl.surriel.com dnsbl.sorbs.net}
 : ${mailserver_rhsbl_list:=rhsbl.sorbs.net}
 
-
 cat > /etc/postfix/master.cf <<EOF
 # Postfix master process configuration file.  For details on the format
 # of the file, see the master(5) manual page (command: "man 5 master" or
