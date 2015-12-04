@@ -101,7 +101,9 @@ mydestination =
     \$myhostname.\$mydomain, 
     ${mailserver_subdomain_list:+$(
         for subdomain in $(eval "echo $mailserver_subdomain_list"); do 
-            echo -ne "${subdomain},\n    ${subdomain}.localdomain,\n    ${subdomain}.\$mydomain,\n    "
+            echo -ne "${subdomain},\n    "
+            echo -ne "${subdomain}.localdomain,\n    "
+            echo -ne "${subdomain}.\$mydomain,\n    "
         done)}localdomain,
     \$mydomain
 
