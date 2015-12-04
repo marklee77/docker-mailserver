@@ -1,11 +1,13 @@
 mailserver:
-    build: .
-    links:
-        - solr
-        - mysql
+  build: .
+  links:
+    - solr
+    - mysql
 
 mysql:
-    image: mariadb
+  image: mariadb
 
 solr:
-    build: solr
+  build: solr
+  ports:
+    - 8983:8983
