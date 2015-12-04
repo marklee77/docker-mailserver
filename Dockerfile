@@ -17,7 +17,6 @@ RUN apt-get update && \
         postfix-policyd-spf-python && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
-
 RUN mkdir /etc/service/postfix
 ADD services/postfix.sh /etc/service/postfix/run
 
