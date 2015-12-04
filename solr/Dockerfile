@@ -1,10 +1,13 @@
-FROM tomcat:6-jre7
+FROM solr:latest
 MAINTAINER Mark Stillwell <mark@stillwell.me>
 
-ENV DEBIAN_FRONTEND noninteractive
-  RUN apt-get update && \
-      apt-get -y install solr-tomcat && \
-      rm -rf /var/lib/apt/lists/* /var/cache/apt/*
+RUN /opt/solr/bin/solr start && \
+    /opt/solr/bin/solr create -c dovecot -d basic_configs && \
+    /opt/solr/bin/solr stop
 
-ADD solr-schema.xml /etc/solr/conf/schema.xml
-RUN chmod 644 /etc/solr/conf/schema.xml
+USER root
+ADD solr-schema.xml /opt/solr/server/solr/dovecot/conf/schema.xml
+RUN chown solr:solr /opt/solr/server/solr/dovecot/conf/schema.xml
+RUN chmod 644 /opt/solr/server/solr/dovecot/conf/schema.xml
+USER solr
+
