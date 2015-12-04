@@ -6,8 +6,8 @@ mailserver:
 
 mysql:
   image: mariadb
+  environment:
+    MYSQL_ROOT_PASSWORD: test
 
 solr:
   build: solr
-  ports:
-    - 8983:8983

@@ -13,6 +13,8 @@ RUN apt-get update && \
         dovecot-sieve \
         mailutils \
         postfix \
+        postfix-ldap \
+        postfix-mysql \
         postfix-pcre \
         postfix-policyd-spf-python && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/*
