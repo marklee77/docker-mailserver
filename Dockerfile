@@ -17,8 +17,8 @@ RUN apt-get update && \
         postfix-policyd-spf-python && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
-ADD service/postfix.sh /etc/service/postfix/run
-ADD service/dovecot.sh /etc/service/dovecot/run
+ADD postfix-service.sh /etc/service/postfix/run
+ADD dovecot-service.sh /etc/service/dovecot/run
 
 # data volumes
 VOLUME [ "/var/log" ]
