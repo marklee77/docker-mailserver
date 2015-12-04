@@ -1,5 +1,5 @@
-dovecot:
-    build: dovecot
+mailserver:
+    build: .
     links:
         - solr
 solr:
