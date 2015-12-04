@@ -17,10 +17,7 @@ RUN apt-get update && \
         postfix-policyd-spf-python && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
-RUN mkdir /etc/service/postfix
 ADD service/postfix.sh /etc/service/postfix/run
-
-RUN mkdir /etc/service/dovecot
 ADD service/dovecot.sh /etc/service/dovecot/run
 
 # data volumes
