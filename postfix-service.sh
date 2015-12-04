@@ -204,12 +204,11 @@ smtpd_recipient_restrictions =
 milter_default_action = accept
 milter_connect_macros = j {daemon_name} v {if_name} _
 
-smtpd_milters = unix:opendkim/opendkim.sock unix:clamav/clamav.sock 
-                unix:dspam/dspam.sock unix:spamass/spamass.sock
+#smtpd_milters = unix:opendkim/opendkim.sock unix:clamav/clamav.sock 
+#                unix:dspam/dspam.sock unix:spamass/spamass.sock
 
-non_smtpd_milters = unix:opendkim/opendkim.sock unix:dspam/dspam.sock
+#non_smtpd_milters = unix:opendkim/opendkim.sock unix:dspam/dspam.sock
 
-local_destination_concurrency_limit = 5
 EOF
 
 exec 1>&2

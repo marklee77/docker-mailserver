@@ -1,5 +1,7 @@
 #!/bin/bash
 
+: ${mailserver_maildir_name:=Maildir}
+
 cat > /etc/dovecot/dovecot.conf <<EOF
 protocols = imap pop3 sieve lmtp
 
@@ -21,7 +23,7 @@ userdb {
   driver = passwd
 }
 
-#mail_location = maildir:~/{{ mailserver_maildir_name }}
+mail_location = maildir:~/$mailserver_maildir_name
 
 namespace inbox {
   inbox = yes
