@@ -18,10 +18,10 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
 RUN mkdir /etc/service/postfix
-ADD services/postfix.sh /etc/service/postfix/run
+ADD service/postfix.sh /etc/service/postfix/run
 
 RUN mkdir /etc/service/dovecot
-ADD services/dovecot.sh /etc/service/dovecot/run
+ADD service/dovecot.sh /etc/service/dovecot/run
 
 # data volumes
 VOLUME [ "/var/log" ]

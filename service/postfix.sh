@@ -1,8 +1,9 @@
 #!/bin/bash
-
-: ${mailserver_fqdn:=$(hostname -f)}
-: ${mailserver_domain:=$(hostname -d)}
+: ${mailserver_fqdn:=localhost.localdomain}
+: ${mailserver_domain:=localdomain}
 : ${mailserver_subdomain_list:=www ftp mail}
+: ${mailserver_rbl_list:=zen.spamhaus.org psbl.surriel.com dnsbl.sorbs.net}
+: ${mailserver_rhsbl_list:=rhsbl.sorbs.net}
 
 cat > /etc/postfix/master.cf <<EOF
 # Postfix master process configuration file.  For details on the format
@@ -33,23 +34,10 @@ submission inet n       -       -       -       -       smtpd
   -o smtpd_recipient_restrictions=
   -o smtpd_relay_restrictions=permit_sasl_authenticated,reject
   -o milter_macro_daemon_name=ORIGINATING
-  -o smtpd_milters=unix:opendkim/opendkim.sock
-#smtps     inet  n       -       -       -       -       smtpd
-#  -o syslog_name=postfix/smtps
-#  -o smtpd_tls_wrappermode=yes
-#  -o smtpd_sasl_auth_enable=yes
-#  -o smtpd_reject_unlisted_recipient=no
-#  -o smtpd_client_restrictions=\$mua_client_restrictions
-#  -o smtpd_helo_restrictions=\$mua_helo_restrictions
-#  -o smtpd_sender_restrictions=\$mua_sender_restrictions
-#  -o smtpd_recipient_restrictions=
-#  -o smtpd_relay_restrictions=permit_sasl_authenticated,reject
-#  -o milter_macro_daemon_name=ORIGINATING
-#628       inet  n       -       -       -       -       qmqpd
+#  -o smtpd_milters=unix:opendkim/opendkim.sock
 pickup    unix  n       -       -       60      1       pickup
 cleanup   unix  n       -       -       -       0       cleanup
 qmgr      unix  n       -       n       300     1       qmgr
-#qmgr     unix  n       -       n       300     1       oqmgr
 tlsmgr    unix  -       -       -       1000?   1       tlsmgr
 rewrite   unix  -       -       -       -       -       trivial-rewrite
 bounce    unix  -       -       -       -       0       bounce
@@ -61,7 +49,6 @@ proxymap  unix  -       -       n       -       -       proxymap
 proxywrite unix -       -       n       -       1       proxymap
 smtp      unix  -       -       -       -       -       smtp
 relay     unix  -       -       -       -       -       smtp
-#       -o smtp_helo_timeout=5 -o smtp_connect_timeout=5
 showq     unix  n       -       -       -       -       showq
 error     unix  -       -       -       -       -       error
 retry     unix  -       -       -       -       -       error
@@ -71,56 +58,10 @@ virtual   unix  -       n       n       -       -       virtual
 lmtp      unix  -       -       -       -       -       lmtp
 anvil     unix  -       -       -       -       1       anvil
 scache    unix  -       -       -       -       1       scache
-#
-# ====================================================================
-# Interfaces to non-Postfix software. Be sure to examine the manual
-# pages of the non-Postfix software to find out what options it wants.
-#
-# Many of the following services use the Postfix pipe(8) delivery
-# agent.  See the pipe(8) man page for information about \${recipient}
-# and other message envelope options.
-# ====================================================================
-#
-# maildrop. See the Postfix MAILDROP_README file for details.
-# Also specify in main.cf: maildrop_destination_recipient_limit=1
-#
 maildrop  unix  -       n       n       -       -       pipe
   flags=DRhu user=vmail argv=/usr/bin/maildrop -d \${recipient}
-#
-# ====================================================================
-#
-# Recent Cyrus versions can use the existing "lmtp" master.cf entry.
-#
-# Specify in cyrus.conf:
-#   lmtp    cmd="lmtpd -a" listen="localhost:lmtp" proto=tcp4
-#
-# Specify in main.cf one or more of the following:
-#  mailbox_transport = lmtp:inet:localhost
-#  virtual_transport = lmtp:inet:localhost
-#
-# ====================================================================
-#
-# Cyrus 2.1.5 (Amos Gouaux)
-# Also specify in main.cf: cyrus_destination_recipient_limit=1
-#
-#cyrus     unix  -       n       n       -       -       pipe
-#  user=cyrus argv=/cyrus/bin/deliver -e -r \${sender} -m \${extension} \${user}
-#
-# ====================================================================
-# Old example of delivery via Cyrus.
-#
-#old-cyrus unix  -       n       n       -       -       pipe
-#  flags=R user=cyrus argv=/cyrus/bin/deliver -e -m \${extension} \${user}
-#
-# ====================================================================
-#
-# See the Postfix UUCP_README file for configuration details.
-#
 uucp      unix  -       n       n       -       -       pipe
   flags=Fqhu user=uucp argv=uux -r -n -z -a\$sender - \$nexthop!rmail (\$recipient)
-#
-# Other external delivery methods.
-#
 ifmail    unix  -       n       n       -       -       pipe
   flags=F user=ftn argv=/usr/lib/ifmail/ifmail -r \$nexthop (\$recipient)
 bsmtp     unix  -       n       n       -       -       pipe
@@ -130,11 +71,6 @@ scalemail-backend unix	-	n	n	-	2	pipe
 mailman   unix  -       n       n       -       -       pipe
   flags=FR user=list argv=/usr/lib/mailman/bin/postfix-to-mailman.py
   \${nexthop} \${user}
-
-# ==========================================================================
-# service type  private unpriv  chroot  wakeup  maxproc command + args
-#               (yes)   (yes)   (yes)   (never) (100)
-# ==========================================================================
 policy-spf unix    -       n       n       -       0     spawn
       user=nobody argv=/usr/bin/policyd-spf
 EOF
@@ -162,11 +98,11 @@ mydestination =
     localhost.\$mydomain, 
     \$myhostname,
     \$myhostname.localdomain,
-    \$myhostname.\$mydomain, ${mailserver_subdomain_list:+$(
+    \$myhostname.\$mydomain, 
+    ${mailserver_subdomain_list:+$(
         for subdomain in $(eval "echo $mailserver_subdomain_list"); do 
-            echo -e "    ${subdomain},\n    ${subdomain}.localdomain,\n    ${subdomain}.\$mydomain,"
-        done)}
-    localdomain,
+            echo -ne "${subdomain},\n    ${subdomain}.localdomain,\n    ${subdomain}.\$mydomain,\n    "
+        done)}localdomain,
     \$mydomain
 
 alias_maps = hash:/etc/aliases
@@ -187,8 +123,8 @@ tls_high_cipherlist = ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:DH
 
 smtp_use_tls = yes
 smtp_tls_CAfile = /etc/ssl/certs/ca-certificates.crt
-${mailserver_ssl_cert_file:+smtp_tls_cert_file = $mailserver_ssl_cert_file}
-${mailserver_ssl_key_file:+smtp_tls_key_file = $mailserver_ssl_key_file}
+smtp_tls_cert_file = $mailserver_ssl_cert_file
+smtp_tls_key_file = $mailserver_ssl_key_file
 smtp_tls_security_level = may
 smtp_tls_session_cache_database = btree:\${data_directory}/smtp_scache
 
@@ -196,8 +132,8 @@ smtpd_use_tls = yes
 smtpd_tls_ask_ccert = yes
 smtpd_tls_auth_only = yes
 smtpd_tls_CAfile = /etc/ssl/certs/ca-certificates.crt
-${mailserver_ssl_cert_file:+smtpd_tls_cert_file = $mailserver_ssl_cert_file}
-${mailserver_ssl_key_file:+smtpd_tls_key_file = $mailserver_ssl_key_file}
+smtpd_tls_cert_file = $mailserver_ssl_cert_file
+smtpd_tls_key_file = $mailserver_ssl_key_file
 smtpd_tls_mandatory_protocols = !SSLv2, !SSLv3
 smtpd_tls_mandatory_ciphers = high
 
@@ -236,7 +172,7 @@ strict_rfc821_envelopes = yes
 postscreen_greet_action = enforce
 postscreen_dnsbl_action = enforce
 postscreen_access_list = permit_mynetworks
-#postscreen_dnsbl_sites = {{ mailserver_rbl_list|join(', ') }}
+${mailserver_rbl_list:+postscreen_dnsbl_sites = ${mailserver_rbl_list// /, }}
 
 policy-spf_time_limit = 3600s
 
@@ -253,14 +189,13 @@ smtpd_recipient_restrictions =
     reject_unknown_recipient_domain,
     reject_unlisted_recipient,
     reject_unauth_destination,
-    #{% for rbl in mailserver_rbl_list -%}
-    #reject_rbl_client {{ rbl }},
-    #{% endfor -%}
-    #{% for rhsbl in mailserver_rhsbl_list -%}
-    #reject_rhsbl_client {{ rhsbl }},
-    #reject_rhsbl_sender {{ rhsbl }},
-    #{% endfor -%}
-    check_policy_service unix:private/policy-spf,
+    ${mailserver_rbl_list:+$(
+        for rbl in $(eval "echo $mailserver_rbl_list"); do 
+            echo -ne "reject_rbl_client $rbl,\n    "
+        done)}${mailserver_rhsbl_list:+$(
+        for rhsbl in $(eval "echo $mailserver_rhsbl_list"); do
+            echo -ne "reject_rhsbl_client $rhsbl,\n    "
+        done)}check_policy_service unix:private/policy-spf,
     check_policy_service unix:sqlgrey/sqlgrey.sock,
     permit
 
@@ -277,12 +212,6 @@ EOF
 
 exec 1>&2
 
-daemon_directory=/usr/lib/postfix \
-command_directory=/usr/sbin \
-config_directory=/etc/postfix \
-queue_directory=/var/spool/postfix \
-mail_owner=postfix \
-setgid_group=postdrop \
-    /etc/postfix/postfix-script check || exit 1
- 
-exec /usr/lib/postfix/master
+/usr/sbin/postfix check
+
+exec /usr/lib/postfix/master -d
