@@ -7,10 +7,12 @@ RUN apt-get update && \
         dovecot-antispam \
         dovecot-core \
         dovecot-imapd \
+        dovecot-ldap \
         dovecot-lmtpd \
         dovecot-managesieved \
-        dovecot-pop3d \
-        dovecot-sieve && \
+        dovecot-mysql \
+        dovecot-sieve \
+        dovecot-solr && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
 ADD service.sh /etc/service/dovecot/run

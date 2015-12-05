@@ -90,7 +90,7 @@ service auth {
 
 # local delivery
 service lmtp {
-  inet_listener }
+  inet_listener {
     port = 24
   }
 }
