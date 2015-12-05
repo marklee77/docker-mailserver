@@ -7,3 +7,6 @@
 - look at different auth methods..
 - want replication
 - need some way to provide/manage ssl certificates
+
+- look up mocking up test data for dev...
+- flocker volume

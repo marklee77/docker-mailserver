@@ -81,21 +81,17 @@ plugin {
   
 }
 
-# authentication for postfix
+# authentication
 service auth {
-  unix_listener /var/spool/postfix/private/dovecot-auth {
-    user = postfix
-    group = postfix
-    mode = 0660
+  inet_listener {
+    port = 12345
   }
 }
 
-# local delivery for postfix
+# local delivery
 service lmtp {
-  unix_listener /var/spool/postfix/private/dovecot-lmtp {
-    user = postfix
-    group = postfix
-    mode = 0600
+  inet_listener }
+    port = 24
   }
 }
 

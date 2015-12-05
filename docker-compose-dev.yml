@@ -1,0 +1,19 @@
+postfix:
+  build: postfix
+  links:
+    - dovecot
+    - mysql
+
+dovecot:
+  build: dovecot
+  links:
+    - mysql
+    - solr
+
+mysql:
+  image: mariadb
+  environment:
+    - MYSQL_ROOT_PASSWORD=devpass
+
+solr:
+  build: solr
