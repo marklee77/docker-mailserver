@@ -10,7 +10,7 @@ RUN apt-get update && \
         dovecot-lmtpd \
         dovecot-managesieved \
         dovecot-pop3d \
-        dovecot-sieve \
+        dovecot-sieve && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
 ADD service.sh /etc/service/dovecot/run
