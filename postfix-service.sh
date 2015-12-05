@@ -1,4 +1,6 @@
 #!/bin/bash
+# FIXME: umask and default group...
+
 : ${mailserver_fqdn:=localhost.localdomain}
 : ${mailserver_domain:=localdomain}
 : ${mailserver_subdomain_list:=www ftp mail}
@@ -6,6 +8,8 @@
 : ${mailserver_ssl_key_file:=/etc/ssl/private/ssl-cert-snakeoil.key}
 : ${mailserver_rbl_list:=zen.spamhaus.org psbl.surriel.com dnsbl.sorbs.net}
 : ${mailserver_rhsbl_list:=rhsbl.sorbs.net}
+
+echo $mailserver_fqdn > /etc/mailname
 
 cat > /etc/postfix/master.cf <<EOF
 # Postfix master process configuration file.  For details on the format

@@ -7,7 +7,7 @@ mailserver:
 mysql:
   image: mariadb
   environment:
-    MYSQL_ROOT_PASSWORD: test
+    - MYSQL_ROOT_PASSWORD
 
 solr:
   build: solr
