@@ -11,6 +11,7 @@ RUN apt-get update && \
         dovecot-lmtpd \
         dovecot-managesieved \
         dovecot-mysql \
+        dovecot-pop3d \
         dovecot-sieve \
         dovecot-solr && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/*
@@ -21,4 +22,4 @@ ADD service.sh /etc/service/dovecot/run
 VOLUME [ "/var/log" ]
 
 # interface ports
-EXPOSE 24 143 12345
+EXPOSE 24 110 143 4190 12345
