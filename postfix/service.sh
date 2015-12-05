@@ -156,7 +156,7 @@ smtpd_sasl_auth_enable = no
 smtpd_sasl_authenticated_header = no
 smtpd_sasl_type = dovecot
 smtpd_sasl_path = 
-    inet:${DOVECOT_PORT_12345_TCP_ADDR}:${DOVECOT_PORT_12345_TCP_PORT}
+    inet:${DOVECOT_PORT_8100_TCP_ADDR}:${DOVECOT_PORT_8100_TCP_PORT}
 smtpd_sasl_local_domain = \$myhostname
 smtpd_sasl_security_options = noanonymous
 
@@ -168,7 +168,7 @@ recipient_delimiter = +
 # DELIVERY TO MAILBOX
 
 mailbox_transport = 
-    lmtp:inet:${DOVECOT_PORT_24_TCP_ADDR}:${DOVECOT_PORT_24_TCP_PORT}
+    lmtp:inet:${DOVECOT_PORT_8025_TCP_ADDR}:${DOVECOT_PORT_8025_TCP_PORT}
 
 # JUNK MAIL CONTROLS
 

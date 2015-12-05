@@ -22,4 +22,4 @@ ADD service.sh /etc/service/dovecot/run
 VOLUME [ "/var/log" ]
 
 # interface ports
-EXPOSE 24 110 143 4190 12345
+EXPOSE 110 143 4190 8025 8100

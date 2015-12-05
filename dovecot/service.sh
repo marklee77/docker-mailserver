@@ -84,14 +84,14 @@ plugin {
 # authentication
 service auth {
   inet_listener {
-    port = 12345
+    port = 8100
   }
 }
 
 # local delivery
 service lmtp {
   inet_listener {
-    port = 24
+    port = 8025
   }
 }
 
