@@ -120,21 +120,14 @@ service pop3-login {
   }
 }
 
-protocol lda {
+protocol lmtp {
   deliver_log_format = msgid=%m: %$
-  mail_plugins = sieve
+  mail_plugins = quota sieve
   postmaster_address = postmaster
   quota_full_tempfail = yes
   rejection_reason = Your message to <%t> was automatically rejected:%n%r
 }
 
-protocol lmtp {
-  deliver_log_format = msgid=%m: %$
-  mail_plugins = sieve
-  postmaster_address = postmaster
-  quota_full_tempfail = yes
-  rejection_reason = Your message to <%t> was automatically rejected:%n%r
-}
 EOF
 
 exec /usr/sbin/dovecot -F -c /etc/dovecot/dovecot.conf

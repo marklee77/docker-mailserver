@@ -10,3 +10,14 @@
 
 - look up mocking up test data for dev...
 - flocker volume
+
+- just have cluebringer for antispam? apparently brings in amavis. Want clamav,
+  dspam, spamassassin
+
+- want amavis?
+
+- cluebringer described at policyd.org
+- prob want postfix web admin
+- how to add databases with docker?
+
+- add docker volume
