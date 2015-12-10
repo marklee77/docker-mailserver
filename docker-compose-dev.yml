@@ -12,8 +12,11 @@ dovecot:
 
 mysql:
   image: mariadb
+  volumes:
+    - ./mysql/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d:ro
   environment:
-    - MYSQL_ROOT_PASSWORD=devpass
+    - MYSQL_ROOT_PASSWORD=password
+    - MYSQL_POSTFIX_DB_PASSWORD=password
 
 solr:
   build: solr
