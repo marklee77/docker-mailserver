@@ -1,3 +1,5 @@
+- support features of mailinabox.email and similar!
+
 - probably makes most sense to have postfix, dovecot, milters in single
   container and then links to ldap, postgres, solr
 
