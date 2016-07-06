@@ -98,15 +98,15 @@ myorigin = \$mydomain
 
 ${mailserver_proxy_interfaces:+proxy_interfaces = $mailserver_proxy_interfaces}
 
-mydestination = 
+mydestination =
     localhost,
     localhost.localdomain,
-    localhost.\$mydomain, 
+    localhost.\$mydomain,
     \$myhostname,
     \$myhostname.localdomain,
-    \$myhostname.\$mydomain, 
+    \$myhostname.\$mydomain,
     ${mailserver_subdomain_list:+$(
-        for subdomain in $(eval "echo $mailserver_subdomain_list"); do 
+        for subdomain in $(eval "echo $mailserver_subdomain_list"); do
             echo -ne "${subdomain},\n    "
             echo -ne "${subdomain}.localdomain,\n    "
             echo -ne "${subdomain}.\$mydomain,\n    "
@@ -155,7 +155,7 @@ smtpd_tls_session_cache_timeout = 3600s
 smtpd_sasl_auth_enable = no
 smtpd_sasl_authenticated_header = no
 smtpd_sasl_type = dovecot
-smtpd_sasl_path = 
+smtpd_sasl_path =
     inet:${DOVECOT_PORT_8100_TCP_ADDR}:${DOVECOT_PORT_8100_TCP_PORT}
 smtpd_sasl_local_domain = \$myhostname
 smtpd_sasl_security_options = noanonymous
@@ -167,7 +167,7 @@ recipient_delimiter = +
 
 # DELIVERY TO MAILBOX
 
-mailbox_transport = 
+mailbox_transport =
     lmtp:inet:${DOVECOT_PORT_8025_TCP_ADDR}:${DOVECOT_PORT_8025_TCP_PORT}
 
 # JUNK MAIL CONTROLS
@@ -175,7 +175,7 @@ mailbox_transport =
 smtpd_banner = \$myhostname ESMTP
 smtpd_helo_required = yes
 readme_directory = no
-in_flow_delay = 1s 
+in_flow_delay = 1s
 disable_vrfy_command = yes
 strict_rfc821_envelopes = yes
 
@@ -186,21 +186,21 @@ ${mailserver_rbl_list:+postscreen_dnsbl_sites = ${mailserver_rbl_list// /, }}
 
 policy-spf_time_limit = 3600s
 
-smtpd_recipient_restrictions = 
+smtpd_recipient_restrictions =
     permit_mynetworks,
     reject_unauth_pipelining,
     reject_unknown_client_hostname,
-    reject_invalid_helo_hostname, 
+    reject_invalid_helo_hostname,
     reject_non_fqdn_helo_hostname,
-    reject_unknown_helo_hostname, 
-    reject_non_fqdn_sender, 
+    reject_unknown_helo_hostname,
+    reject_non_fqdn_sender,
     reject_unknown_sender_domain,
     reject_non_fqdn_recipient,
     reject_unknown_recipient_domain,
     reject_unlisted_recipient,
     reject_unauth_destination,
     ${mailserver_rbl_list:+$(
-        for rbl in $(eval "echo $mailserver_rbl_list"); do 
+        for rbl in $(eval "echo $mailserver_rbl_list"); do
             echo -ne "reject_rbl_client $rbl,\n    "
         done)}${mailserver_rhsbl_list:+$(
         for rhsbl in $(eval "echo $mailserver_rhsbl_list"); do
@@ -212,7 +212,7 @@ smtpd_recipient_restrictions =
 milter_default_action = accept
 milter_connect_macros = j {daemon_name} v {if_name} _
 
-#smtpd_milters = unix:opendkim/opendkim.sock unix:clamav/clamav.sock 
+#smtpd_milters = unix:opendkim/opendkim.sock unix:clamav/clamav.sock
 #                unix:dspam/dspam.sock unix:spamass/spamass.sock
 
 #non_smtpd_milters = unix:opendkim/opendkim.sock unix:dspam/dspam.sock
