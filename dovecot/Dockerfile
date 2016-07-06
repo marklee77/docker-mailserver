@@ -16,6 +16,9 @@ RUN apt-get update && \
         dovecot-solr && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
+RUN groupadd -g 1000 test
+RUN useradd -g 1000 -u 1000 test
+
 ADD service.sh /etc/service/dovecot/run
 
 # data volumes

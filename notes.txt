@@ -1,3 +1,5 @@
+- ansible-container? docker-compose? docker app bundle?
+
 - support features of mailinabox.email and similar!
 
 - probably makes most sense to have postfix, dovecot, milters in single
