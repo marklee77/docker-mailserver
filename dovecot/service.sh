@@ -29,8 +29,8 @@ mail_location = maildir:~/$mailserver_maildir_name
 
 namespace inbox {
   inbox = yes
-  location = 
-  prefix = 
+  location =
+  prefix =
   mailbox Archive {
     auto = subscribe
     special_use = \Archive
@@ -70,7 +70,7 @@ plugin {
   antispam_dspam_spam = --class=spam
   antispam_dspam_notspam = --class=innocent
   antispam_dspam_result_header = X-DSPAM-Result
-  
+
   # fts solr configuration
   fts = solr
   fts_solr = url=http://${SOLR_PORT_8983_TCP_ADDR}:${SOLR_PORT_8983_TCP_PORT}/solr/
@@ -78,7 +78,7 @@ plugin {
   # sieve configuration
   sieve = ~/.dovecot.sieve
   sieve_dir = ~/.sieve.d
-  
+
 }
 
 # authentication
