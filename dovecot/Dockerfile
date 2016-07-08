@@ -22,7 +22,7 @@ RUN useradd -g 1000 -u 1000 test
 ADD service.sh /etc/service/dovecot/run
 
 # data volumes
-VOLUME [ "/var/log" ]
+VOLUME [ "/var/mail", "/var/log" ]
 
 # interface ports
 EXPOSE 110 143 4190 8025 8100
