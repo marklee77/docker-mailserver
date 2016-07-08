@@ -1,3 +1,13 @@
+- services
+  - ldap
+  - postgres
+  - postfix
+  - dovecot
+  - solr
+  - spamassassin
+  - clamav
+  - dkim
+
 - ansible-container? docker-compose? docker app bundle?
 
 - support features of mailinabox.email and similar!

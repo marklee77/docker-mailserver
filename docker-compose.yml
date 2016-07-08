@@ -1,26 +1,25 @@
-postfix:
-  build: postfix
-  links:
-    - dovecot
-    - mysql
+#postfix:
+#  build: postfix
+#  links:
+#    - dovecot
+#    - mysql
 
 dovecot:
   build: dovecot
   links:
-    - mysql
     - solr
   volumes:
     - ./test:/var/mail/test
   ports:
     - "127.0.0.1:1143:143"
 
-mysql:
-  image: mariadb
-  volumes:
-    - ./mysql/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d:ro
-  environment:
-    - MYSQL_ROOT_PASSWORD=password
-    - MYSQL_POSTFIX_PASSWORD=password
+#mysql:
+#  image: mariadb
+#  volumes:
+#    - ./mysql/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d:ro
+#  environment:
+#    - MYSQL_ROOT_PASSWORD=password
+#    - MYSQL_POSTFIX_PASSWORD=password
 
 solr:
   build: solr

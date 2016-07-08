@@ -3,6 +3,17 @@
 : ${mailserver_ssl_cert_file:=/etc/ssl/certs/ssl-cert-snakeoil.pem}
 : ${mailserver_ssl_key_file:=/etc/ssl/private/ssl-cert-snakeoil.key}
 
+SOLR_URL="http://${SOLR_PORT_8983_TCP_ADDR}:${SOLR_PORT_8983_TCP_PORT}/solr/dovecot/"
+
+cat > /etc/cron.daily/dovecot-solr-optimize <<EOF
+#!/bin/bash
+curl $SOLR_URL/update?optimize=true &>/dev/null
+EOF
+
+cat > /etc/cron.d/dovecot <<EOF
+* * * * * curl $SOLR_URL/update?commit=true &>/dev/null
+EOF
+
 cat > /etc/dovecot/dovecot.conf <<EOF
 protocols = imap pop3 sieve lmtp
 
@@ -52,6 +63,8 @@ namespace inbox {
   }
 }
 
+mail_plugins = fts fts_solr
+
 plugin {
 
   # antispam configuration
@@ -69,10 +82,10 @@ plugin {
   antispam_dspam_notspam = --class=innocent
   antispam_dspam_result_header = X-DSPAM-Result
 
-  # fts solr configuration
-  fts = solr
-  fts_solr = break-imap-search debug url=http://${SOLR_PORT_8983_TCP_ADDR}:${SOLR_PORT_8983_TCP_PORT}/solr/dovecot/
+  # fts configuration
   fts_autoindex = yes
+  fts = solr
+  fts_solr = break-imap-search url=$SOLR_URL
 
   # sieve configuration
   sieve = ~/.dovecot.sieve
@@ -97,7 +110,7 @@ service lmtp {
 protocol imap {
   imap_client_workarounds = delay-newmail
   mail_max_userip_connections = 10
-  mail_plugins = antispam fts fts_solr
+  mail_plugins = antispam
 }
 
 service imap-login {
