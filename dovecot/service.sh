@@ -54,7 +54,6 @@ namespace inbox {
 
 plugin {
 
-
   # antispam configuration
   antispam_backend = dspam
   antispam_signature = X-DSPAM-Signature
@@ -72,7 +71,8 @@ plugin {
 
   # fts solr configuration
   fts = solr
-  fts_solr = url=http://${SOLR_PORT_8983_TCP_ADDR}:${SOLR_PORT_8983_TCP_PORT}/solr/
+  fts_solr = break-imap-search debug url=http://${SOLR_PORT_8983_TCP_ADDR}:${SOLR_PORT_8983_TCP_PORT}/solr/dovecot/
+  fts_autoindex = yes
 
   # sieve configuration
   sieve = ~/.dovecot.sieve
