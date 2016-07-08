@@ -8,6 +8,8 @@
   - clamav
   - dkim
 
+- also need ssl from lets encrypt
+
 - ansible-container? docker-compose? docker app bundle?
 
 - support features of mailinabox.email and similar!

@@ -3,12 +3,13 @@
 : ${mailserver_ssl_cert_file:=/etc/ssl/certs/ssl-cert-snakeoil.pem}
 : ${mailserver_ssl_key_file:=/etc/ssl/private/ssl-cert-snakeoil.key}
 
-SOLR_URL="http://${SOLR_PORT_8983_TCP_ADDR}:${SOLR_PORT_8983_TCP_PORT}/solr/dovecot/"
+SOLR_URL="http://${SOLR_PORT_8983_TCP_ADDR}:${SOLR_PORT_8983_TCP_PORT}/solr/dovecot"
 
 cat > /etc/cron.daily/dovecot-solr-optimize <<EOF
 #!/bin/bash
 curl $SOLR_URL/update?optimize=true &>/dev/null
 EOF
+chmod 755 /etc/cron.daily/dovecot-solr-optimize
 
 cat > /etc/cron.d/dovecot <<EOF
 * * * * * curl $SOLR_URL/update?commit=true &>/dev/null
@@ -85,7 +86,7 @@ plugin {
   # fts configuration
   fts_autoindex = yes
   fts = solr
-  fts_solr = break-imap-search url=$SOLR_URL
+  fts_solr = break-imap-search url=$SOLR_URL/
 
   # sieve configuration
   sieve = ~/.dovecot.sieve
@@ -110,7 +111,7 @@ service lmtp {
 protocol imap {
   imap_client_workarounds = delay-newmail
   mail_max_userip_connections = 10
-  mail_plugins = antispam
+  mail_plugins = antispam fts fts_solr
 }
 
 service imap-login {
