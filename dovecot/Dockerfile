@@ -16,13 +16,13 @@ RUN apt-get update && \
         dovecot-solr && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
-RUN groupadd -g 1000 test
-RUN useradd -g 1000 -u 1000 test
+RUN groupadd -g 1000 vmail
+RUN useradd -g 1000 -u 1000 -d /var/mail -s /bin/false vmail
 
 ADD service.sh /etc/service/dovecot/run
 
 # data volumes
-VOLUME [ "/var/mail", "/var/log" ]
+VOLUME [ "/var/vmail", "/var/log" ]
 
 # interface ports
 EXPOSE 110 143 4190 8025 8100
