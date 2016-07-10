@@ -8,6 +8,7 @@
   - clamav
   - dkim
 
+- http://wiki2.dovecot.org/Replication -- check on replicate via volume
 - also need ssl from lets encrypt
 
 - ansible-container? docker-compose? docker app bundle?
