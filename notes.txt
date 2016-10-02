@@ -3,20 +3,23 @@
   - postgres
   - postfix
   - dovecot
+    - maildirs on volume
   - solr
-  - spamassassin
-  - clamav
-  - dkim
+  - web admin
+  - antispam
+    - dkim/dmark
+    - sqlgrey
+    - cluebringer
+    - policyd
+    - web service?
+    - amavis?
+    - spamassassin
+    - clamav
+    - dkim
 
-- http://wiki2.dovecot.org/Replication -- check on replicate via volume
 - also need ssl from lets encrypt
 
-- ansible-container? docker-compose? docker app bundle?
-
 - support features of mailinabox.email and similar!
-
-- probably makes most sense to have postfix, dovecot, milters in single
-  container and then links to ldap, postgres, solr
 
 - virtual users in ldap
 - provide full text search
@@ -28,13 +31,5 @@
 - look up mocking up test data for dev...
 - flocker volume
 
-- just have cluebringer for antispam? apparently brings in amavis. Want clamav,
-  dspam, spamassassin
-
-- want amavis?
-
 - cluebringer described at policyd.org
-- prob want postfix web admin
-- how to add databases with docker?
 
-- add docker volume

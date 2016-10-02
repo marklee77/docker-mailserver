@@ -1,5 +1,4 @@
 #!/bin/bash
-# FIXME: umask and default group...
 
 : ${mailserver_fqdn:=localhost.localdomain}
 : ${mailserver_domain:=localdomain}
@@ -8,6 +7,8 @@
 : ${mailserver_ssl_key_file:=/etc/ssl/private/ssl-cert-snakeoil.key}
 : ${mailserver_rbl_list:=zen.spamhaus.org psbl.surriel.com dnsbl.sorbs.net}
 : ${mailserver_rhsbl_list:=rhsbl.sorbs.net}
+
+umask 0022
 
 echo $mailserver_fqdn > /etc/mailname
 
@@ -40,7 +41,7 @@ submission inet n       -       -       -       -       smtpd
   -o smtpd_recipient_restrictions=
   -o smtpd_relay_restrictions=permit_sasl_authenticated,reject
   -o milter_macro_daemon_name=ORIGINATING
-#  -o smtpd_milters=unix:opendkim/opendkim.sock
+# FIXME: -o smtpd_milters=unix:opendkim/opendkim.sock (dmarc?)
 pickup    unix  n       -       -       60      1       pickup
 cleanup   unix  n       -       -       -       0       cleanup
 qmgr      unix  n       -       n       300     1       qmgr
@@ -129,14 +130,12 @@ relay_domains = \$mydestination
 tls_ssl_options = NO_COMPRESSION
 tls_high_cipherlist = ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES256-SHA
 
-smtp_use_tls = yes
 smtp_tls_CAfile = /etc/ssl/certs/ca-certificates.crt
 smtp_tls_cert_file = $mailserver_ssl_cert_file
 smtp_tls_key_file = $mailserver_ssl_key_file
 smtp_tls_security_level = may
 smtp_tls_session_cache_database = btree:\${data_directory}/smtp_scache
 
-smtpd_use_tls = yes
 smtpd_tls_ask_ccert = yes
 smtpd_tls_auth_only = yes
 smtpd_tls_CAfile = /etc/ssl/certs/ca-certificates.crt
@@ -144,7 +143,6 @@ smtpd_tls_cert_file = $mailserver_ssl_cert_file
 smtpd_tls_key_file = $mailserver_ssl_key_file
 smtpd_tls_mandatory_protocols = !SSLv2, !SSLv3
 smtpd_tls_mandatory_ciphers = high
-
 smtpd_tls_received_header = yes
 smtpd_tls_security_level = may
 smtpd_tls_session_cache_database = btree:\${data_directory}/smtpd_scache
@@ -211,10 +209,9 @@ smtpd_recipient_restrictions =
 
 milter_default_action = accept
 milter_connect_macros = j {daemon_name} v {if_name} _
-
+# FIXME: milters need setting up...
 #smtpd_milters = unix:opendkim/opendkim.sock unix:clamav/clamav.sock
 #                unix:dspam/dspam.sock unix:spamass/spamass.sock
-
 #non_smtpd_milters = unix:opendkim/opendkim.sock unix:dspam/dspam.sock
 
 EOF
