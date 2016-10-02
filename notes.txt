@@ -21,7 +21,7 @@
 
 - support features of mailinabox.email and similar!
 
-- virtual users in ldap
+- virtual users in ldap / postgres?
 - provide full text search
 - filtering with sieve
 - look at different auth methods..
