@@ -3,6 +3,8 @@
 : ${mailserver_ssl_cert_file:=/etc/ssl/certs/ssl-cert-snakeoil.pem}
 : ${mailserver_ssl_key_file:=/etc/ssl/private/ssl-cert-snakeoil.key}
 
+umask 0022
+
 SOLR_URL="http://${SOLR_PORT_8983_TCP_ADDR}:${SOLR_PORT_8983_TCP_PORT}/solr/dovecot"
 NETWORK=$(ip a s eth0 | sed -nr '/^\s*inet ([^\s]+).*/{s//\1/p;q}')
 
@@ -23,6 +25,8 @@ cat > /etc/cron.d/dovecot <<EOF
 * * * * * curl $SOLR_URL/update?commit=true &>/dev/null
 EOF
 
+rm -f /var/lib/dovecot/ssl-parameters.dat
+
 cat > /etc/dovecot/dovecot-ldap.conf.ext <<EOF
 uri = $LDAP_URL
 tls = yes
@@ -30,7 +34,7 @@ auth_bind = yes
 pass_attrs = uid=user, userPassword=password, \
   homeDirectory=userdb_home, uidNumber=userdb_uid, gidNumber=userdb_gid
 
-# For LDA: needed?
+# FIXME: For LDA: needed?
 # user_attrs = homeDirectory=userdb_home, uidNumber=userdb_uid, gidNumber=userdb_gid
 EOF
 chmod 600 /etc/dovecot/dovecot-ldap.conf.ext
@@ -39,8 +43,11 @@ cat > /etc/dovecot/dovecot.conf <<EOF
 protocols = imap pop3 sieve lmtp
 
 ssl = required
-# FIXME: verify cipher list
-ssl_cipher_list = ALL:!LOW:!SSLv2:ALL:!aNULL:!ADH:!eNULL:!EXP:RC4+RSA:+HIGH:+MEDIUM
+ssl_protocols = !SSLv3 !SSLv2
+ssl_cipher_list = EDH+CAMELLIA:EDH+aRSA:EECDH+aRSA+AESGCM:EECDH+aRSA+SHA256:EECDH:+CAMELLIA128:+AES128:+SSLv3:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!DSS:!RC4:!SEED:!IDEA:!ECDSA:kEDH:CAMELLIA128-SHA:AES128-SHA
+ssl_prefer_server_ciphers = yes
+ssl_options = no_compression
+ssl_dh_parameters_length = 2048
 ssl_cert = <$mailserver_ssl_cert_file
 ssl_key = <$mailserver_ssl_key_file
 
@@ -103,6 +110,7 @@ plugin {
   antispam_unsure =
   antispam_allow_append_to_spam = no
 
+  # FIXME: obviously this needs to be some kind of wrapper...
   antispam_dspam_binary = /usr/bin/dspamc
   antispam_dspam_args = --user;%u;--source=error
   antispam_dspam_spam = --class=spam
