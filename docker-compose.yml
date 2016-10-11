@@ -7,6 +7,9 @@ services:
 
   dovecot:
     build: dovecot
+    depends_on:
+      - ldap
+      - solr
     links:
       - ldap
       - solr

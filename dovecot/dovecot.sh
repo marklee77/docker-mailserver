@@ -9,8 +9,8 @@ env
 : ${dovecot_ssl_cert_file:=/usr/local/share/ca-certificates/dovecot.crt}
 : ${dovecot_ssl_key_file:=/etc/ssl/private/dovecot.key}
 
-: ${dovecot_ldap_url:="ldap://${LDAP_PORT_389_TCP_ADDR}:${LDAP_PORT_389_TCP_PORT}"}
-: ${dovecot_solr_url:="http://${SOLR_PORT_8983_TCP_ADDR}:${SOLR_PORT_8983_TCP_PORT}/solr/dovecot"}
+: ${dovecot_ldap_url:="ldap://ldap"}
+: ${dovecot_solr_url:="http://solr:8983/solr/dovecot"}
 : ${dovecot_docker_network:=$(ip a s eth0 | sed -nr '/^\s*inet ([^\s]+).*/{s//\1/p;q}')}
 
 umask 0022
