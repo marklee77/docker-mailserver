@@ -1,16 +1,40 @@
 #!/bin/bash
 
-: ${mailserver_ssl_cert_file:=/etc/ssl/certs/ssl-cert-snakeoil.pem}
-: ${mailserver_ssl_key_file:=/etc/ssl/private/ssl-cert-snakeoil.key}
+env
+
+: ${dovecot_enable_ssl:=yes}
+: ${dovecot_require_ssl:=yes}
+: ${dovecot_ssl_hostname:=localhost}
+: ${dovecot_ssl_ca_cert_file:=/etc/ssl/certs/ca-certificates.crt}
+: ${dovecot_ssl_cert_file:=/usr/local/share/ca-certificates/dovecot.crt}
+: ${dovecot_ssl_key_file:=/etc/ssl/private/dovecot.key}
+
+: ${dovecot_ldap_url:="ldap://${LDAP_PORT_389_TCP_ADDR}:${LDAP_PORT_389_TCP_PORT}"}
+: ${dovecot_solr_url:="http://${SOLR_PORT_8983_TCP_ADDR}:${SOLR_PORT_8983_TCP_PORT}/solr/dovecot"}
+: ${dovecot_docker_network:=$(ip a s eth0 | sed -nr '/^\s*inet ([^\s]+).*/{s//\1/p;q}')}
 
 umask 0022
 
-SOLR_URL="http://${SOLR_PORT_8983_TCP_ADDR}:${SOLR_PORT_8983_TCP_PORT}/solr/dovecot"
-NETWORK=$(ip a s eth0 | sed -nr '/^\s*inet ([^\s]+).*/{s//\1/p;q}')
+if [ -f "/etc/dovecot/dovecot.conf" ]; then
+  exec /usr/sbin/dovecot -F -c /etc/dovecot/dovecot.conf
+fi
+
+if ! grep -q $dovecot_ssl_hostname /etc/hosts; then
+    echo "127.0.1.1\t$dovecot_ssl_hostname" >> /etc/hosts
+fi
+
+if [ "$dovecot_enable_ssl" = "yes" ] && ! [ -f "$dovecot_ssl_cert_file" ]; then
+    openssl req -newkey rsa:2048 -x509 -nodes -days 365 \
+        -subj "/CN=$dovecot_ssl_hostname" \
+        -out $dovecot_ssl_cert_file -keyout $dovecot_ssl_key_file
+fi
+
+# in case user maps a ca cert into /usr/local/share/ca-certificates
+update-ca-certificates
 
 cat > /etc/cron.daily/dovecot-solr-optimize <<EOF
 #!/bin/bash
-curl $SOLR_URL/update?optimize=true &>/dev/null
+curl $dovecot_solr_url/update?optimize=true &>/dev/null
 EOF
 chmod 755 /etc/cron.daily/dovecot-solr-optimize
 
@@ -22,15 +46,18 @@ EOF
 chmod 755 /etc/cron.daily/dovecot-expunge
 
 cat > /etc/cron.d/dovecot <<EOF
-* * * * * curl $SOLR_URL/update?commit=true &>/dev/null
+* * * * * curl $dovecot_solr_url/update?commit=true &>/dev/null
 EOF
 
 rm -f /var/lib/dovecot/ssl-parameters.dat
 
 cat > /etc/dovecot/dovecot-ldap.conf.ext <<EOF
-uri = $LDAP_URL
+uri = $dovecot_ldap_url
 tls = yes
 auth_bind = yes
+# FIXME
+auth_bind_userdn = uid=%u,ou=people,$slapd_base_dn
+ldap_version = 3
 pass_attrs = uid=user, userPassword=password, \
   homeDirectory=userdb_home, uidNumber=userdb_uid, gidNumber=userdb_gid
 
@@ -48,13 +75,13 @@ ssl_cipher_list = EDH+CAMELLIA:EDH+aRSA:EECDH+aRSA+AESGCM:EECDH+aRSA+SHA256:EECD
 ssl_prefer_server_ciphers = yes
 ssl_options = no_compression
 ssl_dh_parameters_length = 2048
-ssl_cert = <$mailserver_ssl_cert_file
-ssl_key = <$mailserver_ssl_key_file
+ssl_cert = <$dovecot_ssl_cert_file
+ssl_key = <$dovecot_ssl_key_file
 
 auth_mechanisms = plain login
 auth_username_format = %Ln
 disable_plaintext_auth = yes
-login_trusted_networks = 127.0.0.0/8 $NETWORK
+login_trusted_networks = 127.0.0.0/8 $docker_network
 
 passdb {
   driver = ldap
@@ -120,7 +147,7 @@ plugin {
   # fts configuration
   fts_autoindex = yes
   fts = solr
-  fts_solr = break-imap-search url=$SOLR_URL/
+  fts_solr = break-imap-search url=$dovecot_solr_url/
 
   # sieve configuration
   sieve = ~/sieve.default
@@ -175,7 +202,4 @@ protocol lmtp {
   quota_full_tempfail = yes
   rejection_reason = Your message to <%t> was automatically rejected:%n%r
 }
-
 EOF
-
-exec /usr/sbin/dovecot -F -c /etc/dovecot/dovecot.conf

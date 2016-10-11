@@ -18,11 +18,11 @@ RUN apt-get update && \
 
 RUN groupadd -g 1000 vmail
 RUN useradd -g 1000 -u 1000 -d /var/mail -s /bin/false vmail
+RUN rm -rf /etc/dovecot/*
 
-ADD service.sh /etc/service/dovecot/run
+COPY dovecot.sh /etc/service/dovecot/run
 
-# data volumes
-VOLUME [ "/var/vmail", "/var/log", "/var/lib/dovecot" ]
+VOLUME [ "/etc/dovecot", "/etc/ssl", "/usr/local/share/ca-certificates", \
+         "/var/lib/dovecot", "/var/log", "/var/vmail" ]
 
-# interface ports
 EXPOSE 110 143 4190 8025 8100

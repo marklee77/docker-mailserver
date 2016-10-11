@@ -8,11 +8,15 @@ services:
   dovecot:
     build: dovecot
     links:
+      - ldap
       - solr
     volumes:
-      - ./test:/var/mail/test
+      - ./test:/var/vmail/test
     ports:
       - "143:143"
 
   solr:
     build: solr
+
+  ldap:
+    image: marklee77/slapd-auth

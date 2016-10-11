@@ -1,3 +1,4 @@
+- everything should install ssl-cert and autogenerate
 - services
   - ldap
   - postgres
@@ -33,3 +34,4 @@
 
 - cluebringer described at policyd.org
 
+- dsync replication
