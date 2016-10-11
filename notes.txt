@@ -1,3 +1,6 @@
+- initially turn off ldap require ssl, then turn it back on later?
+- should we have ssl on between containers?
+
 - everything should install ssl-cert and autogenerate
 - services
   - ldap

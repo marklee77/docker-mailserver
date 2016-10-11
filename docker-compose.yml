@@ -2,6 +2,10 @@ version: '2'
 services:
   postfix:
     build: postfix
+    depends_on:
+      - dovecot
+      - ldap
+      - db
     links:
       - dovecot
 
@@ -23,3 +27,8 @@ services:
 
   ldap:
     image: marklee77/slapd-auth
+    environment:
+      slapd_require_ssl: 'no'
+
+  db:
+    image: postgres
