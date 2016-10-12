@@ -10,7 +10,10 @@ env
 : ${dovecot_ssl_key_file:=/etc/ssl/private/dovecot.key}
 
 : ${dovecot_ldap_url:="ldap://ldap"}
+: ${dovecot_ldap_basedn:="dc=localdomain"}
+
 : ${dovecot_solr_url:="http://solr:8983/solr/dovecot"}
+
 : ${dovecot_docker_network:=$(ip a s eth0 | sed -nr '/^\s*inet ([^\s]+).*/{s//\1/p;q}')}
 
 umask 0022
@@ -56,7 +59,7 @@ uri = $dovecot_ldap_url
 tls = yes
 auth_bind = yes
 # FIXME
-auth_bind_userdn = uid=%u,ou=people,$slapd_base_dn
+auth_bind_userdn = uid=%u,ou=people,$dovecot_ldap_basedn
 ldap_version = 3
 pass_attrs = uid=user, userPassword=password, \
   homeDirectory=userdb_home, uidNumber=userdb_uid, gidNumber=userdb_gid
