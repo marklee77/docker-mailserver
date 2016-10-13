@@ -54,16 +54,12 @@ rm -f /var/lib/dovecot/ssl-parameters.dat
 
 cat > /etc/dovecot/dovecot-ldap.conf.ext <<EOF
 uris = $dovecot_ldap_url
+ldap_version = 3
 #tls = yes
-dn = cn=admin,dc=localdomain
-dnpass = password
+dn = uid=dovecot,ou=services,$dovecot_ldap_basedn
+dnpass = $dovecot_ldap_password
 auth_bind = yes
 auth_bind_userdn = uid=%u,ou=users,$dovecot_ldap_basedn
-base = ou=users,$dovecot_ldap_basedn
-scope = subtree
-ldap_version = 3
-pass_attrs = uid=user, userPassword=password
-#pass_filter = FIXME
 EOF
 chmod 600 /etc/dovecot/dovecot-ldap.conf.ext
 
