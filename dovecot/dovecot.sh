@@ -1,7 +1,5 @@
 #!/bin/bash
 
-env
-
 : ${dovecot_enable_ssl:=yes}
 : ${dovecot_require_ssl:=yes}
 : ${dovecot_ssl_hostname:=localhost}
@@ -9,7 +7,7 @@ env
 : ${dovecot_ssl_cert_file:=/usr/local/share/ca-certificates/dovecot.crt}
 : ${dovecot_ssl_key_file:=/etc/ssl/private/dovecot.key}
 
-: ${dovecot_ldap_url:="ldap://ldap"}
+: ${dovecot_ldap_host:="ldap"}
 : ${dovecot_ldap_basedn:="dc=localdomain"}
 
 : ${dovecot_solr_url:="http://solr:8983/solr/dovecot"}
@@ -55,24 +53,24 @@ EOF
 rm -f /var/lib/dovecot/ssl-parameters.dat
 
 cat > /etc/dovecot/dovecot-ldap.conf.ext <<EOF
-uri = $dovecot_ldap_url
-tls = yes
+hosts = $dovecot_ldap_host
+#tls = yes
 auth_bind = yes
-# FIXME
-auth_bind_userdn = uid=%u,ou=people,$dovecot_ldap_basedn
+auth_bind_userdn = uid=%u,ou=users,$dovecot_ldap_basedn
+base = ou=users,$dovecot_ldap_basedn
+scope = subtree
 ldap_version = 3
-pass_attrs = uid=user, userPassword=password, \
-  homeDirectory=userdb_home, uidNumber=userdb_uid, gidNumber=userdb_gid
-
-# FIXME: For LDA: needed?
-# user_attrs = homeDirectory=userdb_home, uidNumber=userdb_uid, gidNumber=userdb_gid
+pass_attrs = uid=user, userPassword=password
+#pass_filter = FIXME
 EOF
 chmod 600 /etc/dovecot/dovecot-ldap.conf.ext
 
 cat > /etc/dovecot/dovecot.conf <<EOF
 protocols = imap pop3 sieve lmtp
 
-ssl = required
+# FIXME
+#ssl = required
+# FIXME: get these settings right...
 ssl_protocols = !SSLv3 !SSLv2
 ssl_cipher_list = EDH+CAMELLIA:EDH+aRSA:EECDH+aRSA+AESGCM:EECDH+aRSA+SHA256:EECDH:+CAMELLIA128:+AES128:+SSLv3:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!DSS:!RC4:!SEED:!IDEA:!ECDSA:kEDH:CAMELLIA128-SHA:AES128-SHA
 ssl_prefer_server_ciphers = yes
@@ -83,8 +81,8 @@ ssl_key = <$dovecot_ssl_key_file
 
 auth_mechanisms = plain login
 auth_username_format = %Ln
-disable_plaintext_auth = yes
-login_trusted_networks = 127.0.0.0/8 $docker_network
+disable_plaintext_auth = no # FIXME
+login_trusted_networks = 127.0.0.0/8 $dovecot_docker_network
 
 passdb {
   driver = ldap

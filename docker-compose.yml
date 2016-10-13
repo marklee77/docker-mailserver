@@ -21,6 +21,8 @@ services:
       - ./test:/var/vmail/test
     ports:
       - "143:143"
+    environment:
+      dovecot_require_ssl: 'no'
 
   solr:
     build: solr
