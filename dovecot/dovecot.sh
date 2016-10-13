@@ -7,7 +7,7 @@
 : ${dovecot_ssl_cert_file:=/usr/local/share/ca-certificates/dovecot.crt}
 : ${dovecot_ssl_key_file:=/etc/ssl/private/dovecot.key}
 
-: ${dovecot_ldap_host:="ldap"}
+: ${dovecot_ldap_url:="ldap://ldap"}
 : ${dovecot_ldap_basedn:="dc=localdomain"}
 
 : ${dovecot_solr_url:="http://solr:8983/solr/dovecot"}
@@ -53,8 +53,10 @@ EOF
 rm -f /var/lib/dovecot/ssl-parameters.dat
 
 cat > /etc/dovecot/dovecot-ldap.conf.ext <<EOF
-hosts = $dovecot_ldap_host
+uris = $dovecot_ldap_url
 #tls = yes
+dn = cn=admin,dc=localdomain
+dnpass = password
 auth_bind = yes
 auth_bind_userdn = uid=%u,ou=users,$dovecot_ldap_basedn
 base = ou=users,$dovecot_ldap_basedn

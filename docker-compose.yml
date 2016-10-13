@@ -31,6 +31,7 @@ services:
     image: marklee77/slapd-auth
     environment:
       slapd_require_ssl: 'no'
+      slapd_admin_password: password
 
   db:
     image: postgres
