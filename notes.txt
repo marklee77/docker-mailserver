@@ -1,5 +1,7 @@
 - initially turn off ldap require ssl, then turn it back on later?
 - should we have ssl on between containers?
+- need to create dovecot service user, switch userdb to ldap for enumeration?, two ldap config
+  files...
 
 - everything should install ssl-cert and autogenerate
 - services
