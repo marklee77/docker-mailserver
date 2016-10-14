@@ -9,6 +9,7 @@
 
 : ${dovecot_ldap_url:="ldap://ldap"}
 : ${dovecot_ldap_basedn:="dc=localdomain"}
+: ${dovecot_ldap_password:=password}
 
 : ${dovecot_solr_url:="http://solr:8983/solr/dovecot"}
 
@@ -56,10 +57,11 @@ cat > /etc/dovecot/dovecot-ldap.conf.ext <<EOF
 uris = $dovecot_ldap_url
 ldap_version = 3
 #tls = yes
-dn = uid=dovecot,ou=services,$dovecot_ldap_basedn
+dn = cn=admin,$dovecot_ldap_basedn
 dnpass = $dovecot_ldap_password
 auth_bind = yes
 auth_bind_userdn = uid=%u,ou=users,$dovecot_ldap_basedn
+base = $dovecot_ldap_basedn
 EOF
 chmod 600 /etc/dovecot/dovecot-ldap.conf.ext
 
@@ -128,6 +130,7 @@ plugin {
   mailbox_alias_new = Sent
 
   # antispam configuration
+  # FIXME: check docs on this one again...
   antispam_backend = dspam
   antispam_signature = X-DSPAM-Signature
   antispam_signature_missing = error

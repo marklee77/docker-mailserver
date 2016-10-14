@@ -38,3 +38,6 @@
 - cluebringer described at policyd.org
 
 - dsync replication
+
+- change schema to better support multi-domain?
+- use apache tika for full text?
