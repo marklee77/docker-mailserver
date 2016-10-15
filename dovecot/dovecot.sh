@@ -57,7 +57,7 @@ cat > /etc/dovecot/dovecot-ldap.conf.ext <<EOF
 uris = $dovecot_ldap_url
 ldap_version = 3
 #tls = yes
-dn = cn=admin,$dovecot_ldap_basedn
+dn = uid=dovecot,ou=services,$dovecot_ldap_basedn
 dnpass = $dovecot_ldap_password
 auth_bind = yes
 auth_bind_userdn = uid=%u,ou=users,$dovecot_ldap_basedn
