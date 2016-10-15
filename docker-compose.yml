@@ -28,6 +28,9 @@ services:
   solr:
     build: solr
 
+  tika:
+    image: logicalspark/docker-tikaserver
+
   ldap:
     image: marklee77/slapd-auth
     environment:

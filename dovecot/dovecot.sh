@@ -11,7 +11,8 @@
 : ${dovecot_ldap_basedn:="dc=localdomain"}
 : ${dovecot_ldap_password:=password}
 
-: ${dovecot_solr_url:="http://solr:8983/solr/dovecot"}
+: ${dovecot_solr_url:="http://solr:8983/solr/dovecot/"}
+: ${dovecot_tika_url:="http://tika:9998/tika/"}
 
 : ${dovecot_docker_network:=$(ip a s eth0 | sed -nr '/^\s*inet ([^\s]+).*/{s//\1/p;q}')}
 
@@ -149,7 +150,8 @@ plugin {
   # fts configuration
   fts_autoindex = yes
   fts = solr
-  fts_solr = break-imap-search url=$dovecot_solr_url/
+  fts_solr = break-imap-search url=$dovecot_solr_url
+  fts_tika = $dovecot_tika_url
 
   # sieve configuration
   sieve = ~/sieve.default
