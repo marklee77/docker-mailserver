@@ -1,5 +1,3 @@
-#!/bin/bash
-
 : ${dovecot_enable_ssl:=yes}
 : ${dovecot_require_ssl:=yes}
 : ${dovecot_ssl_hostname:=localhost}
@@ -8,6 +6,7 @@
 : ${dovecot_ssl_key_file:=/etc/ssl/private/dovecot.key}
 
 : ${dovecot_ldap_url:="ldap://ldap"}
+: ${dovecot_ldap_ssl_ca_cert_file:=$dovecot_ssl_ca_cert_file}
 : ${dovecot_ldap_basedn:="dc=localdomain"}
 : ${dovecot_ldap_password:=password}
 
@@ -58,19 +57,22 @@ cat > /etc/dovecot/dovecot-ldap.conf.ext <<EOF
 uris = $dovecot_ldap_url
 ldap_version = 3
 #tls = yes
+tls_ca_cert_file = $dovecot_ldap_ssl_ca_cert_file
+#tls_cipher_suite
+#tls_cert_file
+#tls_key_file
+#tls_require_cert = hard
 dn = uid=dovecot,ou=services,$dovecot_ldap_basedn
 dnpass = $dovecot_ldap_password
 auth_bind = yes
-auth_bind_userdn = uid=%u,ou=users,$dovecot_ldap_basedn
+auth_bind_userdn = uid=%n,ou=users,$dovecot_ldap_basedn
 base = ou=users,$dovecot_ldap_basedn
-scope = subtree
+scope = onelevel
 deref = never
-#pass_attrs = =userdb_uid=1000, =userdb_gid=1000, =userdb_home=/var/vmail/%u
-#pass_filter =
-user_attrs = =uid=1000, =gid=1000, =home=/var/vmail/%u
-#user_filter =
-#iterate_attrs =
-#iterate_filter =
+user_attrs = =uid=1000, =gid=1000, =home=/var/vmail/%n
+user_filter = (&(objectClass=inetOrgPerson)(uid=%n))
+iterate_attrs = =uid=1000
+iterate_filter = (objectClass=inetOrgPerson)
 EOF
 chmod 600 /etc/dovecot/dovecot-ldap.conf.ext
 ln -s dovecot-ldap.conf.ext /etc/dovecot/dovecot-ldap-passdb.conf.ext
@@ -161,7 +163,7 @@ plugin {
   fts_autoindex = yes
   fts = solr
   fts_solr = break-imap-search url=$dovecot_solr_url
-  fts_tika = $dovecot_tika_url
+  #fts_tika = $dovecot_tika_url
 
   # sieve configuration
   sieve = ~/sieve.default

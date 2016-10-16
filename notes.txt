@@ -40,10 +40,16 @@
 
 - cluebringer described at policyd.org
 
-- dsync replication
 
 - change schema to better support multi-domain?
 - use apache tika for full text?
 
 - will need to get some kind of estimate on memory reqs, esp for solr, tika,
   clamav
+
+- gid on test user is wrong
+- should service users be able to see password hashes by default?
+- solr/tika performance issues
+
+- consider dovecot sdbox/mdbox format instead of maildir
+- dsync replication or other backup
