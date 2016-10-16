@@ -1,7 +1,7 @@
-- initially turn off ldap require ssl, then turn it back on later?
-- should we have ssl on between containers?
-- need to create dovecot service user, switch userdb to ldap for enumeration?, two ldap config
-  files...
+- cannot use "users" as slapd group because it already exists
+- get ssl working, then make it so everything knows when not to require it
+- next is postfix?
+
 - why do I need to explicitly index now?
 
 - everything should install ssl-cert and autogenerate
@@ -12,7 +12,8 @@
   - dovecot
     - maildirs on volume
   - solr
-  - web admin
+  - web admin for postfix
+  - clamav
   - antispam
     - dkim/dmark
     - sqlgrey
@@ -21,7 +22,6 @@
     - web service?
     - amavis?
     - spamassassin
-    - clamav
     - dkim
 
 - also need ssl from lets encrypt
@@ -39,7 +39,6 @@
 - flocker volume
 
 - cluebringer described at policyd.org
-
 
 - change schema to better support multi-domain?
 - use apache tika for full text?
