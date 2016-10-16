@@ -62,9 +62,19 @@ dn = uid=dovecot,ou=services,$dovecot_ldap_basedn
 dnpass = $dovecot_ldap_password
 auth_bind = yes
 auth_bind_userdn = uid=%u,ou=users,$dovecot_ldap_basedn
-base = $dovecot_ldap_basedn
+base = ou=users,$dovecot_ldap_basedn
+scope = subtree
+deref = never
+#pass_attrs = =userdb_uid=1000, =userdb_gid=1000, =userdb_home=/var/vmail/%u
+#pass_filter =
+user_attrs = =uid=1000, =gid=1000, =home=/var/vmail/%u
+#user_filter =
+#iterate_attrs =
+#iterate_filter =
 EOF
 chmod 600 /etc/dovecot/dovecot-ldap.conf.ext
+ln -s dovecot-ldap.conf.ext /etc/dovecot/dovecot-ldap-passdb.conf.ext
+ln -s dovecot-ldap.conf.ext /etc/dovecot/dovecot-ldap-userdb.conf.ext
 
 cat > /etc/dovecot/dovecot.conf <<EOF
 protocols = imap pop3 sieve lmtp
@@ -87,12 +97,12 @@ login_trusted_networks = 127.0.0.0/8 $dovecot_docker_network
 
 passdb {
   driver = ldap
-  args = /etc/dovecot/dovecot-ldap.conf.ext
+  args = /etc/dovecot/dovecot-ldap-passdb.conf.ext
 }
 
 userdb {
-  driver = static
-  args = uid=vmail gid=vmail home=/var/vmail/%u
+  driver = ldap
+  args = /etc/dovecot/dovecot-ldap-userdb.conf.ext
 }
 
 mail_location = maildir:~/Maildir
