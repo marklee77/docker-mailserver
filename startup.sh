@@ -9,9 +9,9 @@ docker exec dockermailserver_ldap_1 \
                -y /etc/ldapscripts/ldapscripts.passwd \
                -s $dovecot_ldap_password \
                uid=dovecot,ou=services,dc=localdomain
-docker exec dockermailserver_ldap_1 ldapadduser test users
+docker exec dockermailserver_ldap_1 ldapadduser test people
 docker exec dockermailserver_ldap_1 \
     ldappasswd -D cn=admin,dc=localdomain \
                -y /etc/ldapscripts/ldapscripts.passwd \
                -s test \
-               uid=test,ou=users,dc=localdomain
+               uid=test,ou=people,dc=localdomain
