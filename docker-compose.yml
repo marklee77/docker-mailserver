@@ -28,8 +28,8 @@ services:
   solr:
     build: solr
 
-  tika:
-    image: logicalspark/docker-tikaserver
+  #tika:
+  #  image: logicalspark/docker-tikaserver
 
   ldap:
     image: marklee77/slapd-auth

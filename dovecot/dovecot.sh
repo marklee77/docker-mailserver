@@ -67,8 +67,8 @@ tls_ca_cert_file = $dovecot_ldap_ssl_ca_cert_file
 dn = uid=dovecot,ou=services,$dovecot_ldap_basedn
 dnpass = $dovecot_ldap_password
 auth_bind = yes
-auth_bind_userdn = uid=%n,ou=users,$dovecot_ldap_basedn
-base = ou=users,$dovecot_ldap_basedn
+auth_bind_userdn = uid=%n,ou=people,$dovecot_ldap_basedn
+base = ou=people,$dovecot_ldap_basedn
 scope = onelevel
 deref = never
 user_attrs = =uid=1000, =gid=1000, =home=/var/vmail/%n
