@@ -83,20 +83,18 @@ ln -s dovecot-ldap.conf.ext /etc/dovecot/dovecot-ldap-userdb.conf.ext
 cat > /etc/dovecot/dovecot.conf <<EOF
 protocols = imap pop3 sieve lmtp
 
-# FIXME
-#ssl = required
-# FIXME: get these settings right...
+ssl = required
 ssl_protocols = !SSLv3 !SSLv2
-ssl_cipher_list = EDH+CAMELLIA:EDH+aRSA:EECDH+aRSA+AESGCM:EECDH+aRSA+SHA256:EECDH:+CAMELLIA128:+AES128:+SSLv3:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!DSS:!RC4:!SEED:!IDEA:!ECDSA:kEDH:CAMELLIA128-SHA:AES128-SHA
+ssl_cipher_list = EECDH+AESGCM:EDH+AESGCM:EECDH+AES256:EDH+AES256
 ssl_prefer_server_ciphers = yes
 ssl_options = no_compression
-ssl_dh_parameters_length = 2048
+ssl_dh_parameters_length = 4096
 ssl_cert = <$dovecot_ssl_cert_file
 ssl_key = <$dovecot_ssl_key_file
 
 auth_mechanisms = plain login
 auth_username_format = %Ln
-disable_plaintext_auth = no # FIXME
+disable_plaintext_auth = yes
 login_trusted_networks = 127.0.0.0/8 $dovecot_docker_network
 
 passdb {

@@ -1,28 +1,29 @@
 - cannot use "users" as slapd group because it already exists
 - get ssl working, then make it so everything knows when not to require it
+- should service users be able to see password hashes by default?
 - next is postfix?
 
 - why do I need to explicitly index now?
 
 - everything should install ssl-cert and autogenerate
-- services
-  - ldap
-  - postgres
-  - postfix
-  - dovecot
-    - maildirs on volume
-  - solr
-  - web admin for postfix
-  - clamav
-  - antispam
-    - dkim/dmark
-    - sqlgrey
-    - cluebringer
-    - policyd
-    - web service?
-    - amavis?
-    - spamassassin
-    - dkim
+- web admin for postfix
+  - phamm? allows users to change passwords, manage forwarding
+  - postfixadmin -- might not play well with ldap...
+- clamav
+- antispam
+  - dkim/dmark
+  - sqlgrey
+  - cluebringer -- policyd.org?
+  - policyd
+  - web service?
+  - amavis?
+  - spamassassin
+  - dkim
+  - let's encrypt
+
+- look at mailinabox and mailcow
+
+- look at ubuntu mail stack
 
 - also need ssl from lets encrypt
 
@@ -47,7 +48,6 @@
   clamav
 
 - gid on test user is wrong
-- should service users be able to see password hashes by default?
 - solr/tika performance issues
 
 - consider dovecot sdbox/mdbox format instead of maildir
