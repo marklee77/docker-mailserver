@@ -1,3 +1,5 @@
+#!/bin/bash
+
 : ${dovecot_enable_ssl:=yes}
 : ${dovecot_require_ssl:=yes}
 : ${dovecot_ssl_hostname:=localhost}
