@@ -1,21 +1,20 @@
 #!/bin/bash
 
-: ${dovecot_enable_ssl:=yes}
-: ${dovecot_require_ssl:=yes}
+: ${dovecot_ssl:=required}
 : ${dovecot_ssl_hostname:=localhost}
 : ${dovecot_ssl_ca_cert_file:=/etc/ssl/certs/ca-certificates.crt}
 : ${dovecot_ssl_cert_file:=/usr/local/share/ca-certificates/dovecot.crt}
 : ${dovecot_ssl_key_file:=/etc/ssl/private/dovecot.key}
 
 : ${dovecot_ldap_url:="ldap://ldap"}
-: ${dovecot_ldap_ssl_ca_cert_file:=$dovecot_ssl_ca_cert_file}
+: ${dovecot_ldap_tls:=yes}
+: ${dovecot_ldap_tls_ca_cert_file:=$dovecot_ssl_ca_cert_file}
+: ${dovecot_ldap_tls_require_cert:=yes}
 : ${dovecot_ldap_basedn:="dc=localdomain"}
 : ${dovecot_ldap_password:=password}
 
 : ${dovecot_solr_url:="http://solr:8983/solr/dovecot/"}
 : ${dovecot_tika_url:="http://tika:9998/tika/"}
-
-: ${dovecot_docker_network:=$(ip a s eth0 | sed -nr '/^\s*inet ([^\s]+).*/{s//\1/p;q}')}
 
 umask 0022
 
@@ -58,12 +57,9 @@ rm -f /var/lib/dovecot/ssl-parameters.dat
 cat > /etc/dovecot/dovecot-ldap.conf.ext <<EOF
 uris = $dovecot_ldap_url
 ldap_version = 3
-#tls = yes
-tls_ca_cert_file = $dovecot_ldap_ssl_ca_cert_file
-#tls_cipher_suite
-#tls_cert_file
-#tls_key_file
-#tls_require_cert = hard
+tls = $dovecot_ldap_tls
+tls_ca_cert_file = $dovecot_ldap_tls_ca_cert_file
+tls_require_cert = $dovecot_ldap_tls_require_cert
 dn = uid=dovecot,ou=services,$dovecot_ldap_basedn
 dnpass = $dovecot_ldap_password
 auth_bind = yes
@@ -83,7 +79,7 @@ ln -s dovecot-ldap.conf.ext /etc/dovecot/dovecot-ldap-userdb.conf.ext
 cat > /etc/dovecot/dovecot.conf <<EOF
 protocols = imap pop3 sieve lmtp
 
-ssl = required
+ssl = $dovecot_ssl
 ssl_protocols = !SSLv3 !SSLv2
 ssl_cipher_list = EECDH+AESGCM:EDH+AESGCM:EECDH+AES256:EDH+AES256
 ssl_prefer_server_ciphers = yes
@@ -95,7 +91,7 @@ ssl_key = <$dovecot_ssl_key_file
 auth_mechanisms = plain login
 auth_username_format = %Ln
 disable_plaintext_auth = yes
-login_trusted_networks = 127.0.0.0/8 $dovecot_docker_network
+login_trusted_networks = 127.0.0.0/8
 
 passdb {
   driver = ldap

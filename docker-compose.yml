@@ -22,7 +22,7 @@ services:
     ports:
       - "143:143"
     environment:
-      dovecot_require_ssl: 'no'
+      dovecot_ldap_tls: 'no'
       dovecot_ldap_password: "$dovecot_ldap_password"
 
   solr:
