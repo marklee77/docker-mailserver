@@ -1,3 +1,8 @@
+- postfix: incomming vs outgoing milter
+    - incomming: spf?, dkim, dmarc
+    - outgoing: dkim, for signing
+    - contentfilter: amavis? clamav, dspam, spamassassin
+- need db init.
 - cannot use "users" as slapd group because it already exists
 - get ssl working, then make it so everything knows when not to require it
 - should service users be able to see password hashes by default?
@@ -9,17 +14,19 @@
 - web admin for postfix
   - phamm? allows users to change passwords, manage forwarding
   - postfixadmin -- might not play well with ldap...
+  - gosa?
+  - fusiondirectory !!!
 - clamav
 - antispam
-  - dkim/dmark
-  - sqlgrey
-  - cluebringer -- policyd.org?
-  - policyd
-  - web service?
-  - amavis?
-  - spamassassin
-  - dkim
-  - let's encrypt
+- dkim/dmark
+- sqlgrey
+- cluebringer -- policyd.org?
+- policyd
+- web service?
+- amavis?
+- spamassassin
+- dkim
+- let's encrypt
 
 - look at mailinabox and mailcow
 

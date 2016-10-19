@@ -22,11 +22,7 @@ if [ -f "/etc/dovecot/dovecot.conf" ]; then
   exec /usr/sbin/dovecot -F -c /etc/dovecot/dovecot.conf
 fi
 
-if ! grep -q $dovecot_ssl_hostname /etc/hosts; then
-    echo "127.0.1.1\t$dovecot_ssl_hostname" >> /etc/hosts
-fi
-
-if [ "$dovecot_enable_ssl" = "yes" ] && ! [ -f "$dovecot_ssl_cert_file" ]; then
+if ! [ -f "$dovecot_ssl_cert_file" ]; then
     openssl req -newkey rsa:2048 -x509 -nodes -days 365 \
         -subj "/CN=$dovecot_ssl_hostname" \
         -out $dovecot_ssl_cert_file -keyout $dovecot_ssl_key_file

@@ -1,16 +1,36 @@
 #!/bin/bash
 
-: ${mailserver_fqdn:=localhost.localdomain}
-: ${mailserver_domain:=localdomain}
-: ${mailserver_subdomain_list:=www ftp mail}
-: ${mailserver_ssl_cert_file:=/etc/ssl/certs/ssl-cert-snakeoil.pem}
-: ${mailserver_ssl_key_file:=/etc/ssl/private/ssl-cert-snakeoil.key}
-: ${mailserver_rbl_list:=zen.spamhaus.org psbl.surriel.com dnsbl.sorbs.net}
-: ${mailserver_rhsbl_list:=rhsbl.sorbs.net}
+: ${postfix_fqdn:=localhost.localdomain}
+: ${postfix_domain:=localdomain}
+: ${postfix_subdomain_list:=www ftp mail}
+
+: ${postfix_ssl_ca_cert_file:=/etc/ssl/certs/ca-certificates.crt}
+: ${postfix_ssl_cert_file:=/usr/local/share/ca-certificates/postfix.crt}
+: ${postfix_ssl_key_file:=/etc/ssl/private/postfix.key}
+
+: ${postfix_sasl_path:=inet:dovecot:8100}
+: ${postfix_mailbox_transport:=lmtp:inet:dovecot:8025}
+
+: ${postfix_rbl_list:=zen.spamhaus.org psbl.surriel.com dnsbl.sorbs.net}
+: ${postfix_rhsbl_list:=rhsbl.sorbs.net}
+: ${postfix_message_size_limit:=104857600}
 
 umask 0022
 
-echo $mailserver_fqdn > /etc/mailname
+if [ -f "/etc/postfix/master.cf" ]
+  exec /usr/lib/postfix/master -d
+fi
+
+if [ -f "$postfix_ssl_cert_file" ]; then
+    openssl req -newkey rsa:2048 -x509 -nodes -days 365 \
+        -subj "/CN=$postfix_fqdn" \
+        -out $postfix_ssl_cert_file -keyout $postfix_ssl_key_file
+fi
+
+# in case user maps a ca cert into /usr/local/share/ca-certificates
+update-ca-certificates
+
+echo $postfix_fqdn > /etc/mailname
 
 cat > /etc/postfix/master.cf <<EOF
 # Postfix master process configuration file.  For details on the format
@@ -29,19 +49,19 @@ smtpd     pass  -       -       -       -       -       smtpd
 dnsblog   unix  -       -       -       -       0       dnsblog
 tlsproxy  unix  -       -       -       -       0       tlsproxy
 submission inet n       -       -       -       -       smtpd
+  -o milter_macro_daemon_name=ORIGINATING
   -o syslog_name=postfix/submission
-  -o smtpd_tls_security_level=encrypt
-  -o tls_preempt_cipherlist=yes
-  -o smtpd_tls_eecdh_grade=ultra
-  -o smtpd_sasl_auth_enable=yes
-  -o smtpd_reject_unlisted_recipient=no
   -o smtpd_client_restrictions=
   -o smtpd_helo_restrictions=
-  -o smtpd_sender_restrictions=
+  -o smtpd_milters=opendkim/opendkim.sock
   -o smtpd_recipient_restrictions=
+  -o smtpd_reject_unlisted_recipient=no
   -o smtpd_relay_restrictions=permit_sasl_authenticated,reject
-  -o milter_macro_daemon_name=ORIGINATING
-# FIXME: -o smtpd_milters=unix:opendkim/opendkim.sock (dmarc?)
+  -o smtpd_sasl_auth_enable=yes
+  -o smtpd_sender_restrictions=
+  -o smtpd_tls_eecdh_grade=ultra
+  -o smtpd_tls_security_level=encrypt
+  -o tls_preempt_cipherlist=yes
 pickup    unix  n       -       -       60      1       pickup
 cleanup   unix  n       -       -       -       0       cleanup
 qmgr      unix  n       -       n       300     1       qmgr
@@ -89,15 +109,15 @@ biff = no
 
 # INTERNET HOST AND DOMAIN NAMES
 
-${mailserver_relay_host:+relayhost = $mailserver_relay_host}
+${postfix_relay_host:+relayhost = $postfix_relay_host}
 
-myhostname = $mailserver_fqdn
-mydomain = $mailserver_domain
+myhostname = $postfix_fqdn
+mydomain = $postfix_domain
 myorigin = \$mydomain
 
 # RECEIVING MAIL
 
-${mailserver_proxy_interfaces:+proxy_interfaces = $mailserver_proxy_interfaces}
+${postfix_proxy_interfaces:+proxy_interfaces = $postfix_proxy_interfaces}
 
 mydestination =
     localhost,
@@ -106,8 +126,8 @@ mydestination =
     \$myhostname,
     \$myhostname.localdomain,
     \$myhostname.\$mydomain,
-    ${mailserver_subdomain_list:+$(
-        for subdomain in $(eval "echo $mailserver_subdomain_list"); do
+    ${postfix_subdomain_list:+$(
+        for subdomain in $(eval "echo $postfix_subdomain_list"); do
             echo -ne "${subdomain},\n    "
             echo -ne "${subdomain}.localdomain,\n    "
             echo -ne "${subdomain}.\$mydomain,\n    "
@@ -122,26 +142,26 @@ mailbox_size_limit = 0
 
 # TRUST AND RELAY CONTROL
 
+# FIXME: add docker network?
 mynetworks = 127.0.0.0/8
 relay_domains = \$mydestination
 
 # TLS parameters
 
 tls_ssl_options = NO_COMPRESSION
-# FIXME
-tls_high_cipherlist = ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES256-SHA
+tls_high_cipherlist = EECDH+AESGCM:EDH+AESGCM:EECDH+AES256:EDH+AES256
 
-smtp_tls_CAfile = /etc/ssl/certs/ca-certificates.crt
-smtp_tls_cert_file = $mailserver_ssl_cert_file
-smtp_tls_key_file = $mailserver_ssl_key_file
+smtp_tls_CAfile = $postfix_ssl_ca_cert_file
+smtp_tls_cert_file = $postfix_ssl_cert_file
+smtp_tls_key_file = $postfix_ssl_key_file
 smtp_tls_security_level = may
 smtp_tls_session_cache_database = btree:\${data_directory}/smtp_scache
 
 smtpd_tls_ask_ccert = yes
 smtpd_tls_auth_only = yes
-smtpd_tls_CAfile = /etc/ssl/certs/ca-certificates.crt
-smtpd_tls_cert_file = $mailserver_ssl_cert_file
-smtpd_tls_key_file = $mailserver_ssl_key_file
+smtpd_tls_CAfile = $postfix_ssl_ca_cert_file
+smtpd_tls_cert_file = $postfix_ssl_cert_file
+smtpd_tls_key_file = $postfix_ssl_key_file
 smtpd_tls_mandatory_protocols = !SSLv2, !SSLv3
 smtpd_tls_mandatory_ciphers = high
 smtpd_tls_received_header = yes
@@ -154,8 +174,7 @@ smtpd_tls_session_cache_timeout = 3600s
 smtpd_sasl_auth_enable = no
 smtpd_sasl_authenticated_header = no
 smtpd_sasl_type = dovecot
-smtpd_sasl_path =
-    inet:${DOVECOT_PORT_8100_TCP_ADDR}:${DOVECOT_PORT_8100_TCP_PORT}
+smtpd_sasl_path = $postfix_sasl_path
 smtpd_sasl_local_domain = \$myhostname
 smtpd_sasl_security_options = noanonymous
 
@@ -166,8 +185,7 @@ recipient_delimiter = +
 
 # DELIVERY TO MAILBOX
 
-mailbox_transport =
-    lmtp:inet:${DOVECOT_PORT_8025_TCP_ADDR}:${DOVECOT_PORT_8025_TCP_PORT}
+mailbox_transport = $postfix_mailbox_transport
 
 # JUNK MAIL CONTROLS
 
@@ -177,11 +195,12 @@ readme_directory = no
 in_flow_delay = 1s
 disable_vrfy_command = yes
 strict_rfc821_envelopes = yes
+message_size_limit = $postfix_message_size_limit
 
 postscreen_greet_action = enforce
 postscreen_dnsbl_action = enforce
 postscreen_access_list = permit_mynetworks
-${mailserver_rbl_list:+postscreen_dnsbl_sites = ${mailserver_rbl_list// /, }}
+${postfix_rbl_list:+postscreen_dnsbl_sites = ${postfix_rbl_list// /, }}
 
 policy-spf_time_limit = 3600s
 
@@ -198,27 +217,20 @@ smtpd_recipient_restrictions =
     reject_unknown_recipient_domain,
     reject_unlisted_recipient,
     reject_unauth_destination,
-    ${mailserver_rbl_list:+$(
-        for rbl in $(eval "echo $mailserver_rbl_list"); do
+    ${postfix_rbl_list:+$(
+        for rbl in $(eval "echo $postfix_rbl_list"); do
             echo -ne "reject_rbl_client $rbl,\n    "
-        done)}${mailserver_rhsbl_list:+$(
-        for rhsbl in $(eval "echo $mailserver_rhsbl_list"); do
+        done)}${postfix_rhsbl_list:+$(
+        for rhsbl in $(eval "echo $postfix_rhsbl_list"); do
             echo -ne "reject_rhsbl_client $rhsbl,\n    "
         done)}check_policy_service unix:private/policy-spf,
     check_policy_service unix:sqlgrey/sqlgrey.sock,
     permit
 
 milter_default_action = accept
-milter_connect_macros = j {daemon_name} v {if_name} _
-# FIXME: milters need setting up...
-#smtpd_milters = unix:opendkim/opendkim.sock unix:clamav/clamav.sock
-#                unix:dspam/dspam.sock unix:spamass/spamass.sock
-#non_smtpd_milters = unix:opendkim/opendkim.sock unix:dspam/dspam.sock
+smtpd_milters = unix:opendkim/opendkim.sock unix:opendmarc/opendmarc.sock
+non_smtpd_milters = unix:opendkim/opendkim.sock
+
+#FIXME: content_filter = inet:amavis:8025
 
 EOF
-
-exec 1>&2
-
-/usr/sbin/postfix check
-
-exec /usr/lib/postfix/master -d
