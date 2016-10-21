@@ -10,7 +10,8 @@ RUN apt-get update && \
         postfix \
         postfix-ldap \
         postfix-pcre \
-        postfix-policyd-spf-python && \
+        postfix-policyd-spf-python \
+        sqlgrey && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
 RUN rm /etc/dkimkeys/* -rf /etc/postfix/* /etc/opend{kim,marc}.conf
