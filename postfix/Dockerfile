@@ -18,7 +18,7 @@ RUN rm /etc/dkimkeys/* -rf /etc/postfix/* /etc/opend{kim,marc}.conf
 ADD postfix.sh /etc/service/postfix/run
 
 # data volumes
-VOLUME [ "/etc/postfix", "/etc/ssl", "/usr/local/share/ca-certificates", \
+VOLUME [ "/etc/dkimkeys", "/etc/postfix", "/etc/ssl", "/usr/local/share/ca-certificates", \
          "/var/lib/postfix", "/var/log" ]
 
 # interface ports

@@ -1,7 +1,4 @@
-- postfix: incomming vs outgoing milter
-    - incomming: spf?, dkim, dmarc
-    - outgoing: dkim, for signing
-    - contentfilter: amavis? clamav, dspam, spamassassin
+- postfix postgres? control panel? fusion directory?
 - need db init.
 - cannot use "users" as slapd group because it already exists
 - get ssl working, then make it so everything knows when not to require it
@@ -10,12 +7,10 @@
 
 - why do I need to explicitly index now?
 
+- http://wiki.dovecot.org/HowTo/LDAPdiablo
 - everything should install ssl-cert and autogenerate
 - web admin for postfix
-  - phamm? allows users to change passwords, manage forwarding
-  - postfixadmin -- might not play well with ldap...
-  - gosa?
-  - fusiondirectory !!!
+  - fusiondirectory
 - clamav
 - antispam
 - dkim/dmark
