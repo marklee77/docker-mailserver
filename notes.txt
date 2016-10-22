@@ -1,3 +1,4 @@
+- slapd db init mechanism, add back in modules, schema
 - postfix postgres? control panel? fusion directory?
 - need db init.
 - cannot use "users" as slapd group because it already exists

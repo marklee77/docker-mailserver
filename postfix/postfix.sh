@@ -8,6 +8,13 @@
 : ${postfix_ssl_cert_file:=/usr/local/share/ca-certificates/postfix.crt}
 : ${postfix_ssl_key_file:=/etc/ssl/private/postfix.key}
 
+: ${postfix_ldap_url:="ldap://ldap"}
+: ${postfix_ldap_tls:=yes}
+: ${postfix_ldap_tls_ca_cert_file:=$postfix_ssl_ca_cert_file}
+: ${postfix_ldap_tls_require_cert:=yes}
+: ${postfix_ldap_basedn:="dc=localdomain"}
+: ${postfix_ldap_password:=password}
+
 : ${postfix_sasl_path:=inet:dovecot:8100}
 : ${postfix_mailbox_transport:=lmtp:inet:dovecot:8025}
 
@@ -102,6 +109,21 @@ policy-spf unix    -       n       n       -       0     spawn
       user=nobody argv=/usr/bin/policyd-spf
 EOF
 
+cat > /etc/postfix/ldap-aliases.cf <<EOF
+server_host = $postfix_ldap_url
+ldap_version = 3
+start_tls = $postfix_ldap_tls
+tls_ca_cert_file = $postfix_ldap_tls_ca_cert_file
+tls_require_cert = $postfix_ldap_tls_require_cert
+bind = yes
+bind_dn = uid=postfix,ou=services,$postfix_ldap_basedn
+bind_pw = $postfix_ldap_password
+base = ou=people,$postfix_ldap_basedn
+scope = one
+dereference = 0
+result_attribute = #FIXME
+EOF
+
 cat > /etc/postfix/main.cf <<EOF
 # NOTIFICATIONS
 
@@ -134,9 +156,9 @@ mydestination =
         done)}localdomain,
     \$mydomain
 
-alias_maps = hash:/etc/aliases
-alias_database = hash:/etc/aliases
-local_recipient_maps = proxy:unix:passwd.byname \$alias_maps
+# FIXME: ldap maps...
+alias_maps = ldap:/etc/postfix/ldap-aliases.cf
+local_recipient_maps = FIXME
 
 mailbox_size_limit = 0
 
@@ -227,10 +249,9 @@ smtpd_recipient_restrictions =
     check_policy_service unix:sqlgrey/sqlgrey.sock,
     permit
 
+content_filter = inet:amavis:8025
+
 milter_default_action = accept
 smtpd_milters = unix:opendkim/opendkim.sock unix:opendmarc/opendmarc.sock
 non_smtpd_milters = unix:opendkim/opendkim.sock
-
-#FIXME: content_filter = inet:amavis:8025
-
 EOF
