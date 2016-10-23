@@ -4,6 +4,7 @@
 : ${postfix_domain:=localdomain}
 : ${postfix_subdomain_list:=www ftp mail}
 
+: ${postfix_ssl_hostname:=$postfix_fqdn}
 : ${postfix_ssl_ca_cert_file:=/etc/ssl/certs/ca-certificates.crt}
 : ${postfix_ssl_cert_file:=/usr/local/share/ca-certificates/postfix.crt}
 : ${postfix_ssl_key_file:=/etc/ssl/private/postfix.key}
@@ -24,13 +25,13 @@
 
 umask 0022
 
-if [ -f "/etc/postfix/master.cf" ]
+if [ -f "/etc/postfix/master.cf" ]; then
   exec /usr/lib/postfix/master -d
 fi
 
 if [ -f "$postfix_ssl_cert_file" ]; then
     openssl req -newkey rsa:2048 -x509 -nodes -days 365 \
-        -subj "/CN=$postfix_fqdn" \
+        -subj "/CN=$postfix_ssl_hostname" \
         -out $postfix_ssl_cert_file -keyout $postfix_ssl_key_file
 fi
 
