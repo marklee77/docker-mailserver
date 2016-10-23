@@ -29,7 +29,7 @@ if [ -f "/etc/postfix/master.cf" ]; then
   exec /usr/lib/postfix/sbin/master -d
 fi
 
-if [ -f "$postfix_ssl_cert_file" ]; then
+if ! [ -f "$postfix_ssl_cert_file" ]; then
     openssl req -newkey rsa:2048 -x509 -nodes -days 365 \
         -subj "/CN=$postfix_ssl_hostname" \
         -out $postfix_ssl_cert_file -keyout $postfix_ssl_key_file
