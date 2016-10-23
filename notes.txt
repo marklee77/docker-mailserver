@@ -2,60 +2,18 @@
 - http://wiki.dovecot.org/Replication -- ha cluster
 - http://wiki.dovecot.org/PasswordDatabase/ExtraFields/Proxy
 
-- slapd db init mechanism, add back in modules, schema
-- postfix postgres? control panel? fusion directory?
-- need db init.
-- cannot use "users" as slapd group because it already exists
-- get ssl working, then make it so everything knows when not to require it
-- should service users be able to see password hashes by default?
-- next is postfix?
-
-- why do I need to explicitly index now?
-
-- http://wiki.dovecot.org/HowTo/LDAPdiablo
-- everything should install ssl-cert and autogenerate
-- web admin for postfix
-  - fusiondirectory
-- clamav
-- antispam
-- dkim/dmark
-- sqlgrey
-- cluebringer -- policyd.org?
-- policyd
-- web service?
-- amavis?
-- spamassassin
-- dkim
-- let's encrypt
-
 - look at mailinabox and mailcow
 
-- look at ubuntu mail stack
-
-- also need ssl from lets encrypt
-
-- support features of mailinabox.email and similar!
-
-- virtual users in ldap / postgres?
-- provide full text search
-- filtering with sieve
-- look at different auth methods..
-- want replication
-- need some way to provide/manage ssl certificates
-
-- look up mocking up test data for dev...
-- flocker volume
-
-- cluebringer described at policyd.org
-
-- change schema to better support multi-domain?
-- use apache tika for full text?
-
-- will need to get some kind of estimate on memory reqs, esp for solr, tika,
-  clamav
-
-- gid on test user is wrong
-- solr/tika performance issues
-
 - consider dovecot sdbox/mdbox format instead of maildir
+- http://wiki.dovecot.org/HowTo/LDAPdiablo
+- slapd db init mechanism, add back in modules, schema
+- get ssl working, then make it so everything knows when not to require it
+- maybe postgrey instead of sqlgrey?
+- fusiondirectory
+- amavis
+  - clamav
+  - spamassassin
+- dkim/dmarc
+- let's encrypt
+- filtering with sieve
 - dsync replication or other backup
