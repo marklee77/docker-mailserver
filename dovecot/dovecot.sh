@@ -6,15 +6,17 @@
 : ${dovecot_ssl_cert_file:=/usr/local/share/ca-certificates/dovecot.crt}
 : ${dovecot_ssl_key_file:=/etc/ssl/private/dovecot.key}
 
-: ${dovecot_ldap_url:="ldap://ldap"}
+: ${dovecot_ldap_url:=ldap://ldap}
 : ${dovecot_ldap_tls:=yes}
 : ${dovecot_ldap_tls_ca_cert_file:=$dovecot_ssl_ca_cert_file}
 : ${dovecot_ldap_tls_require_cert:=yes}
-: ${dovecot_ldap_basedn:="dc=localdomain"}
+: ${dovecot_ldap_basedn:=dc=localdomain}
 : ${dovecot_ldap_password:=password}
 
-: ${dovecot_solr_url:="http://solr:8983/solr/dovecot/"}
-: ${dovecot_tika_url:="http://tika:9998/tika/"}
+: ${dovecot_solr_url:=http://solr:8983/solr/dovecot/}
+: ${dovecot_tika_url:=http://tika:9998/tika/}
+
+docker_network=$(ip a s eth0 | sed -n '/^\s*inet \([^ ]*\).*/{s//\1/p;q}')
 
 umask 0022
 
@@ -87,7 +89,7 @@ ssl_key = <$dovecot_ssl_key_file
 auth_mechanisms = plain login
 auth_username_format = %Ln
 disable_plaintext_auth = yes
-login_trusted_networks = 127.0.0.0/8
+login_trusted_networks = 127.0.0.0/8 $docker_network
 
 passdb {
   driver = ldap
@@ -135,7 +137,6 @@ plugin {
   mailbox_alias_new = Sent
 
   # antispam configuration
-  # FIXME: check docs on this one again...
   antispam_backend = dspam
   antispam_signature = X-DSPAM-Signature
   antispam_signature_missing = error
@@ -144,7 +145,6 @@ plugin {
   antispam_unsure =
   antispam_allow_append_to_spam = no
 
-  # FIXME: obviously this needs to be some kind of wrapper...
   antispam_dspam_binary = /usr/bin/dspamc
   antispam_dspam_args = --user;%u;--source=error
   antispam_dspam_spam = --class=spam
