@@ -78,7 +78,7 @@ cat > /etc/dovecot/dovecot.conf <<EOF
 protocols = imap pop3 sieve lmtp
 
 ssl = $dovecot_ssl
-ssl_protocols = !SSLv3 !SSLv2
+ssl_protocols = !SSLv2 !SSLv3
 ssl_cipher_list = EECDH+AESGCM:EDH+AESGCM:EECDH+AES256:EDH+AES256
 ssl_prefer_server_ciphers = yes
 ssl_options = no_compression

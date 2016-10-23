@@ -9,11 +9,11 @@
 : ${postfix_ssl_cert_file:=/usr/local/share/ca-certificates/postfix.crt}
 : ${postfix_ssl_key_file:=/etc/ssl/private/postfix.key}
 
-: ${postfix_ldap_url:="ldap://ldap"}
+: ${postfix_ldap_url:=ldap://ldap}
 : ${postfix_ldap_tls:=yes}
 : ${postfix_ldap_tls_ca_cert_file:=$postfix_ssl_ca_cert_file}
 : ${postfix_ldap_tls_require_cert:=yes}
-: ${postfix_ldap_basedn:="dc=localdomain"}
+: ${postfix_ldap_basedn:=dc=localdomain}
 : ${postfix_ldap_password:=password}
 
 : ${postfix_sasl_path:=inet:dovecot:8100}
@@ -22,6 +22,8 @@
 : ${postfix_rbl_list:=zen.spamhaus.org psbl.surriel.com dnsbl.sorbs.net}
 : ${postfix_rhsbl_list:=rhsbl.sorbs.net}
 : ${postfix_message_size_limit:=104857600}
+
+docker_network=$(ip a s eth0 | sed -n '/^\s*inet \([^ ]*\).*/{s//\1/p;q}')
 
 umask 0022
 
@@ -106,7 +108,7 @@ mailman   unix  -       n       n       -       -       pipe
   flags=FR user=list argv=/usr/lib/mailman/bin/postfix-to-mailman.py
   \${nexthop} \${user}
 policy-spf unix    -       n       n       -       0     spawn
-      user=nobody argv=/usr/bin/policyd-spf
+  user=nobody argv=/usr/bin/policyd-spf
 EOF
 
 cat > /etc/postfix/ldap-aliases.cf <<EOF
@@ -134,7 +136,6 @@ biff = no
 ${postfix_relay_host:+relayhost = $postfix_relay_host}
 
 myhostname = $postfix_fqdn
-mydomain = $postfix_domain
 myorigin = \$mydomain
 
 # RECEIVING MAIL
@@ -151,7 +152,6 @@ mydestination =
     ${postfix_subdomain_list:+$(
         for subdomain in $(eval "echo $postfix_subdomain_list"); do
             echo -ne "${subdomain},\n    "
-            echo -ne "${subdomain}.localdomain,\n    "
             echo -ne "${subdomain}.\$mydomain,\n    "
         done)}localdomain,
     \$mydomain
@@ -163,14 +163,13 @@ mailbox_size_limit = 0
 
 # TRUST AND RELAY CONTROL
 
-# FIXME: add docker network?
-mynetworks = 127.0.0.0/8
+mynetworks = 127.0.0.0/8 $docker_network
 relay_domains = \$mydestination
 
 # TLS parameters
 
-tls_ssl_options = NO_COMPRESSION
 tls_high_cipherlist = EECDH+AESGCM:EDH+AESGCM:EECDH+AES256:EDH+AES256
+tls_ssl_options = NO_COMPRESSION
 
 smtp_tls_CAfile = $postfix_ssl_ca_cert_file
 smtp_tls_cert_file = $postfix_ssl_cert_file
