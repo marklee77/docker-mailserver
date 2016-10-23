@@ -47,7 +47,7 @@ EOF
 chmod 755 /etc/cron.daily/dovecot-expunge
 
 cat > /etc/cron.d/dovecot <<EOF
-* * * * * curl $dovecot_solr_url/update?commit=true &>/dev/null
+* * * * * dovecot curl $dovecot_solr_url/update?commit=true &>/dev/null
 EOF
 
 rm -f /var/lib/dovecot/ssl-parameters.dat
