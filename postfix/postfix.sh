@@ -50,14 +50,14 @@ cat > /etc/postfix/master.cf <<EOF
 # Do not forget to execute "postfix reload" after editing this file.
 #
 # ==========================================================================
-# service type  private unpriv  chroot  wakeup  maxproc command + args
-#               (yes)   (yes)   (no)    (never) (100)
+# service  type  private unpriv  chroot  wakeup  maxproc command + args
+#                (yes)   (yes)   (no)    (never) (100)
 # ==========================================================================
-smtp      inet  n       -       y       -       1       postscreen
-smtpd     pass  -       -       y       -       -       smtpd
-dnsblog   unix  -       -       y       -       0       dnsblog
-tlsproxy  unix  -       -       y       -       0       tlsproxy
-submission inet n       -       y       -       -       smtpd
+smtp       inet  n       -       y       -       1       postscreen
+smtpd      pass  -       -       y       -       -       smtpd
+dnsblog    unix  -       -       y       -       0       dnsblog
+tlsproxy   unix  -       -       y       -       0       tlsproxy
+submission inet  n       -       y       -       -       smtpd
   -o milter_macro_daemon_name=ORIGINATING
   -o syslog_name=postfix/submission
   -o smtpd_client_restrictions=
@@ -71,43 +71,30 @@ submission inet n       -       y       -       -       smtpd
   -o smtpd_tls_eecdh_grade=ultra
   -o smtpd_tls_security_level=encrypt
   -o tls_preempt_cipherlist=yes
-pickup    unix  n       -       y       60      1       pickup
-cleanup   unix  n       -       y       -       0       cleanup
-qmgr      unix  n       -       n       300     1       qmgr
-tlsmgr    unix  -       -       y       1000?   1       tlsmgr
-rewrite   unix  -       -       y       -       -       trivial-rewrite
-bounce    unix  -       -       y       -       0       bounce
-defer     unix  -       -       y       -       0       bounce
-trace     unix  -       -       y       -       0       bounce
-verify    unix  -       -       y       -       1       verify
-flush     unix  n       -       y       1000?   0       flush
-proxymap  unix  -       -       n       -       -       proxymap
-proxywrite unix -       -       n       -       1       proxymap
-smtp      unix  -       -       y       -       -       smtp
-relay     unix  -       -       y       -       -       smtp
-showq     unix  n       -       y       -       -       showq
-error     unix  -       -       y       -       -       error
-retry     unix  -       -       y       -       -       error
-discard   unix  -       -       y       -       -       discard
-local     unix  -       n       n       -       -       local
-virtual   unix  -       n       n       -       -       virtual
-lmtp      unix  -       -       y       -       -       lmtp
-anvil     unix  -       -       y       -       1       anvil
-scache    unix  -       -       y       -       1       scache
-maildrop  unix  -       n       n       -       -       pipe
-  flags=DRhu user=vmail argv=/usr/bin/maildrop -d \${recipient}
-uucp      unix  -       n       n       -       -       pipe
-  flags=Fqhu user=uucp argv=uux -r -n -z -a\$sender - \$nexthop!rmail (\$recipient)
-ifmail    unix  -       n       n       -       -       pipe
-  flags=F user=ftn argv=/usr/lib/ifmail/ifmail -r \$nexthop (\$recipient)
-bsmtp     unix  -       n       n       -       -       pipe
-  flags=Fq. user=bsmtp argv=/usr/lib/bsmtp/bsmtp -t\$nexthop -f\$sender \$recipient
-scalemail-backend unix	-	n	n	-	2	pipe
-  flags=R user=scalemail argv=/usr/lib/scalemail/bin/scalemail-store \${nexthop} \${user} \${extension}
-mailman   unix  -       n       n       -       -       pipe
-  flags=FR user=list argv=/usr/lib/mailman/bin/postfix-to-mailman.py
-  \${nexthop} \${user}
-policy-spf unix    -       n       n       -       0     spawn
+pickup     unix  n       -       y       60      1       pickup
+cleanup    unix  n       -       y       -       0       cleanup
+qmgr       unix  n       -       n       300     1       qmgr
+tlsmgr     unix  -       -       y       1000?   1       tlsmgr
+rewrite    unix  -       -       y       -       -       trivial-rewrite
+bounce     unix  -       -       y       -       0       bounce
+defer      unix  -       -       y       -       0       bounce
+trace      unix  -       -       y       -       0       bounce
+verify     unix  -       -       y       -       1       verify
+flush      unix  n       -       y       1000?   0       flush
+proxymap   unix  -       -       n       -       -       proxymap
+proxywrite unix  -       -       n       -       1       proxymap
+smtp       unix  -       -       y       -       -       smtp
+relay      unix  -       -       y       -       -       smtp
+showq      unix  n       -       y       -       -       showq
+error      unix  -       -       y       -       -       error
+retry      unix  -       -       y       -       -       error
+discard    unix  -       -       y       -       -       discard
+local      unix  -       n       n       -       -       local
+virtual    unix  -       n       n       -       -       virtual
+lmtp       unix  -       -       y       -       -       lmtp
+anvil      unix  -       -       y       -       1       anvil
+scache     unix  -       -       y       -       1       scache
+policy-spf unix  -       n       n       -       0       spawn
   user=nobody argv=/usr/bin/policyd-spf
 EOF
 
@@ -133,14 +120,10 @@ biff = no
 
 # INTERNET HOST AND DOMAIN NAMES
 
-${postfix_relay_host:+relayhost = $postfix_relay_host}
-
 myhostname = $postfix_fqdn
 myorigin = \$mydomain
 
 # RECEIVING MAIL
-
-${postfix_proxy_interfaces:+proxy_interfaces = $postfix_proxy_interfaces}
 
 mydestination =
     localhost,
@@ -157,7 +140,7 @@ mydestination =
     \$mydomain
 
 alias_maps = ldap:/etc/postfix/ldap-aliases.cf
-local_recipient_maps = FIXME
+local_recipient_maps = \$alias_maps
 
 mailbox_size_limit = 0
 
@@ -220,7 +203,7 @@ message_size_limit = $postfix_message_size_limit
 postscreen_greet_action = enforce
 postscreen_dnsbl_action = enforce
 postscreen_access_list = permit_mynetworks
-${postfix_rbl_list:+postscreen_dnsbl_sites = ${postfix_rbl_list// /, }}
+postscreen_dnsbl_sites = ${postfix_rbl_list// /, }
 
 policy-spf_time_limit = 3600s
 

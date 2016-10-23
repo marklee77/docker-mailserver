@@ -1,6 +1,7 @@
 - http://blog.dovecot.org/2012/02/dovecot-clustering-with-dsync-based.html
 - http://wiki.dovecot.org/Replication -- ha cluster
 - http://wiki.dovecot.org/PasswordDatabase/ExtraFields/Proxy
+- https://www.howtoforge.com/postfix-virtual-hosting-with-ldap-backend-and-dovecot-imap-pop3-on-ubuntu-trusty-tahr-14.04-p3
 
 - look at mailinabox and mailcow
 
