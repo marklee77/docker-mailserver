@@ -1,3 +1,7 @@
+- http://blog.dovecot.org/2012/02/dovecot-clustering-with-dsync-based.html
+- http://wiki.dovecot.org/Replication -- ha cluster
+- http://wiki.dovecot.org/PasswordDatabase/ExtraFields/Proxy
+
 - slapd db init mechanism, add back in modules, schema
 - postfix postgres? control panel? fusion directory?
 - need db init.

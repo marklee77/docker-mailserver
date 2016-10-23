@@ -121,7 +121,7 @@ bind_pw = $postfix_ldap_password
 base = ou=people,$postfix_ldap_basedn
 scope = one
 dereference = 0
-result_attribute = #FIXME
+result_attribute = alias
 EOF
 
 cat > /etc/postfix/main.cf <<EOF
@@ -156,7 +156,6 @@ mydestination =
         done)}localdomain,
     \$mydomain
 
-# FIXME: ldap maps...
 alias_maps = ldap:/etc/postfix/ldap-aliases.cf
 local_recipient_maps = FIXME
 
@@ -246,10 +245,10 @@ smtpd_recipient_restrictions =
         for rhsbl in $(eval "echo $postfix_rhsbl_list"); do
             echo -ne "reject_rhsbl_client $rhsbl,\n    "
         done)}check_policy_service unix:private/policy-spf,
-    check_policy_service unix:sqlgrey/sqlgrey.sock,
+#    check_policy_service unix:sqlgrey/sqlgrey.sock,
     permit
 
-content_filter = inet:amavis:8025
+#content_filter = inet:amavis:8025
 
 milter_default_action = accept
 smtpd_milters = unix:opendkim/opendkim.sock unix:opendmarc/opendmarc.sock

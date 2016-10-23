@@ -1,4 +1,5 @@
 version: '2'
+
 services:
   postfix:
     build: postfix
@@ -8,6 +9,9 @@ services:
       - db
     links:
       - dovecot
+    environment:
+      postfix_ldap_password:
+      postfix_ldap_tls: 'no'
 
   dovecot:
     build: dovecot
@@ -22,8 +26,8 @@ services:
     ports:
       - "143:143"
     environment:
+      dovecot_ldap_password:
       dovecot_ldap_tls: 'no'
-      dovecot_ldap_password: "$dovecot_ldap_password"
 
   solr:
     build: solr
@@ -34,7 +38,10 @@ services:
   ldap:
     image: marklee77/slapd-auth
     environment:
+      slapd_admin_password:
       slapd_require_ssl: 'no'
 
   db:
     image: postgres
+    environment:
+      POSTGRES_PASSWORD:
