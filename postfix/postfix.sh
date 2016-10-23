@@ -26,7 +26,7 @@
 umask 0022
 
 if [ -f "/etc/postfix/master.cf" ]; then
-  exec /usr/lib/postfix/master -d
+  exec /usr/lib/postfix/sbin/master -d
 fi
 
 if [ -f "$postfix_ssl_cert_file" ]; then
@@ -49,14 +49,13 @@ cat > /etc/postfix/master.cf <<EOF
 #
 # ==========================================================================
 # service type  private unpriv  chroot  wakeup  maxproc command + args
-#               (yes)   (yes)   (yes)   (never) (100)
+#               (yes)   (yes)   (no)    (never) (100)
 # ==========================================================================
-#smtp      inet  n       -       -       -       -       smtpd
-smtp      inet  n       -       -       -       1       postscreen
-smtpd     pass  -       -       -       -       -       smtpd
-dnsblog   unix  -       -       -       -       0       dnsblog
-tlsproxy  unix  -       -       -       -       0       tlsproxy
-submission inet n       -       -       -       -       smtpd
+smtp      inet  n       -       y       -       1       postscreen
+smtpd     pass  -       -       y       -       -       smtpd
+dnsblog   unix  -       -       y       -       0       dnsblog
+tlsproxy  unix  -       -       y       -       0       tlsproxy
+submission inet n       -       y       -       -       smtpd
   -o milter_macro_daemon_name=ORIGINATING
   -o syslog_name=postfix/submission
   -o smtpd_client_restrictions=
@@ -70,29 +69,29 @@ submission inet n       -       -       -       -       smtpd
   -o smtpd_tls_eecdh_grade=ultra
   -o smtpd_tls_security_level=encrypt
   -o tls_preempt_cipherlist=yes
-pickup    unix  n       -       -       60      1       pickup
-cleanup   unix  n       -       -       -       0       cleanup
+pickup    unix  n       -       y       60      1       pickup
+cleanup   unix  n       -       y       -       0       cleanup
 qmgr      unix  n       -       n       300     1       qmgr
-tlsmgr    unix  -       -       -       1000?   1       tlsmgr
-rewrite   unix  -       -       -       -       -       trivial-rewrite
-bounce    unix  -       -       -       -       0       bounce
-defer     unix  -       -       -       -       0       bounce
-trace     unix  -       -       -       -       0       bounce
-verify    unix  -       -       -       -       1       verify
-flush     unix  n       -       -       1000?   0       flush
+tlsmgr    unix  -       -       y       1000?   1       tlsmgr
+rewrite   unix  -       -       y       -       -       trivial-rewrite
+bounce    unix  -       -       y       -       0       bounce
+defer     unix  -       -       y       -       0       bounce
+trace     unix  -       -       y       -       0       bounce
+verify    unix  -       -       y       -       1       verify
+flush     unix  n       -       y       1000?   0       flush
 proxymap  unix  -       -       n       -       -       proxymap
 proxywrite unix -       -       n       -       1       proxymap
-smtp      unix  -       -       -       -       -       smtp
-relay     unix  -       -       -       -       -       smtp
-showq     unix  n       -       -       -       -       showq
-error     unix  -       -       -       -       -       error
-retry     unix  -       -       -       -       -       error
-discard   unix  -       -       -       -       -       discard
+smtp      unix  -       -       y       -       -       smtp
+relay     unix  -       -       y       -       -       smtp
+showq     unix  n       -       y       -       -       showq
+error     unix  -       -       y       -       -       error
+retry     unix  -       -       y       -       -       error
+discard   unix  -       -       y       -       -       discard
 local     unix  -       n       n       -       -       local
 virtual   unix  -       n       n       -       -       virtual
-lmtp      unix  -       -       -       -       -       lmtp
-anvil     unix  -       -       -       -       1       anvil
-scache    unix  -       -       -       -       1       scache
+lmtp      unix  -       -       y       -       -       lmtp
+anvil     unix  -       -       y       -       1       anvil
+scache    unix  -       -       y       -       1       scache
 maildrop  unix  -       n       n       -       -       pipe
   flags=DRhu user=vmail argv=/usr/bin/maildrop -d \${recipient}
 uucp      unix  -       n       n       -       -       pipe
