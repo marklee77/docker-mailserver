@@ -18,3 +18,4 @@
 - let's encrypt
 - filtering with sieve
 - dsync replication or other backup
+- default sieve rules

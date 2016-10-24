@@ -137,19 +137,17 @@ plugin {
   mailbox_alias_new = Sent
 
   # antispam configuration
-  antispam_backend = dspam
-  antispam_signature = X-DSPAM-Signature
-  antispam_signature_missing = error
-  antispam_trash = Trash
   antispam_spam = Spam
-  antispam_unsure =
+  antispam_trash = Trash
   antispam_allow_append_to_spam = no
 
-  antispam_dspam_binary = /usr/bin/dspamc
-  antispam_dspam_args = --user;%u;--source=error
-  antispam_dspam_spam = --class=spam
-  antispam_dspam_notspam = --class=innocent
-  antispam_dspam_result_header = X-DSPAM-Result
+  antispam_backend = pipe
+  antispam_pipe_tmpdir = /var/tmp
+  antispam_pipe_program = /usr/bin/spamc
+  antispam_pipe_program_args = -u;%u
+  antispam_pipe_program_spam_arg = -L;spam
+  antispam_pipe_program_notspam_arg = -L;ham
+  antispam_pipe_program_args = -d;amavis
 
   # fts configuration
   fts_autoindex = yes

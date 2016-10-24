@@ -13,7 +13,8 @@ RUN apt-get update && \
         dovecot-mysql \
         dovecot-pop3d \
         dovecot-sieve \
-        dovecot-solr && \
+        dovecot-solr \
+        spamc && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
 RUN groupadd -g 1000 vmail
