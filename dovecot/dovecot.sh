@@ -1,7 +1,6 @@
 #!/bin/bash
 
 : ${dovecot_ssl:=required}
-: ${dovecot_ssl_hostname:=localhost}
 : ${dovecot_ssl_ca_cert_file:=/etc/ssl/certs/ca-certificates.crt}
 : ${dovecot_ssl_cert_file:=/usr/local/share/ca-certificates/dovecot.crt}
 : ${dovecot_ssl_key_file:=/etc/ssl/private/dovecot.key}
@@ -10,7 +9,7 @@
 : ${dovecot_ldap_tls:=yes}
 : ${dovecot_ldap_tls_ca_cert_file:=$dovecot_ssl_ca_cert_file}
 : ${dovecot_ldap_tls_require_cert:=yes}
-: ${dovecot_ldap_basedn:=dc=localdomain}
+: ${dovecot_ldap_basedn:=dc=ldap,dc=dit}
 : ${dovecot_ldap_password:=password}
 
 : ${dovecot_solr_url:=http://solr:8983/solr/dovecot/}
@@ -26,11 +25,10 @@ fi
 
 if ! [ -f "$dovecot_ssl_cert_file" ]; then
     openssl req -newkey rsa:2048 -x509 -nodes -days 365 \
-        -subj "/CN=$dovecot_ssl_hostname" \
+        -subj "/CN=$(hostname)" \
         -out $dovecot_ssl_cert_file -keyout $dovecot_ssl_key_file
 fi
 
-# in case user maps a ca cert into /usr/local/share/ca-certificates
 update-ca-certificates
 
 cat > /etc/cron.daily/dovecot-solr-optimize <<EOF
@@ -58,21 +56,22 @@ ldap_version = 3
 tls = $dovecot_ldap_tls
 tls_ca_cert_file = $dovecot_ldap_tls_ca_cert_file
 tls_require_cert = $dovecot_ldap_tls_require_cert
-dn = uid=dovecot,ou=services,$dovecot_ldap_basedn
+dn = cn=dovecot,ou=dsa,$dovecot_ldap_basedn
 dnpass = $dovecot_ldap_password
 auth_bind = yes
-auth_bind_userdn = uid=%u,$dovecot_ldap_basedn
-base = $dovecot_ldap_basedn
+auth_bind_userdn = uid=%u,ou=people,$dovecot_ldap_basedn
+base = ou=people,$dovecot_ldap_basedn
 scope = onelevel
 deref = never
-user_attrs = =uid=1000, =gid=1000, =home=/var/vmail/%u
-user_filter = (&(objectClass=inetOrgPerson)(uid=%u))
-iterate_attrs = =user=%{ldap:uid}
-iterate_filter = (objectClass=inetOrgPerson)
+pass_attrs = uid=user, userPassword=password
+pass_filter = (&(objectClass=gosaMailAccount)(|(uid=%u)(mail=%u)))
+user_attrs = uid=user
+user_filter = (&(objectClass=gosaMailAccount)(|(uid=%u)(mail=%u)))
+iterate_attrs = uid=user
+iterate_filter = (objectClass=gosaMailAccount)
 EOF
 chmod 600 /etc/dovecot/dovecot-ldap.conf.ext
 ln -s dovecot-ldap.conf.ext /etc/dovecot/dovecot-ldap-passdb.conf.ext
-ln -s dovecot-ldap.conf.ext /etc/dovecot/dovecot-ldap-userdb.conf.ext
 
 cat > /etc/dovecot/dovecot.conf <<EOF
 protocols = imap pop3 sieve lmtp
@@ -87,7 +86,7 @@ ssl_cert = <$dovecot_ssl_cert_file
 ssl_key = <$dovecot_ssl_key_file
 
 auth_mechanisms = plain login
-auth_username_format = %Ln
+auth_username_format = %Lu
 disable_plaintext_auth = yes
 login_trusted_networks = 127.0.0.0/8 $docker_network
 
@@ -101,6 +100,9 @@ userdb {
   args = /etc/dovecot/dovecot-ldap-userdb.conf.ext
 }
 
+mail_uid = vmail
+mail_gid = vmail
+mail_home = /var/vmail/%u
 mail_location = maildir:~/Maildir
 
 namespace inbox {
