@@ -107,10 +107,10 @@ tls_require_cert = $postfix_ldap_tls_require_cert
 bind = yes
 bind_dn = uid=postfix,ou=services,$postfix_ldap_basedn
 bind_pw = $postfix_ldap_password
-base = ou=people,$postfix_ldap_basedn
-scope = one
+base = $postfix_ldap_basedn
+scope = sub
 dereference = 0
-result_attribute = alias
+result_attribute = FIXME
 EOF
 
 cat > /etc/postfix/main.cf <<EOF

@@ -61,13 +61,13 @@ tls_require_cert = $dovecot_ldap_tls_require_cert
 dn = uid=dovecot,ou=services,$dovecot_ldap_basedn
 dnpass = $dovecot_ldap_password
 auth_bind = yes
-auth_bind_userdn = uid=%n,ou=people,$dovecot_ldap_basedn
-base = ou=people,$dovecot_ldap_basedn
+auth_bind_userdn = uid=%u,$dovecot_ldap_basedn
+base = $dovecot_ldap_basedn
 scope = onelevel
 deref = never
-user_attrs = =uid=1000, =gid=1000, =home=/var/vmail/%n
-user_filter = (&(objectClass=inetOrgPerson)(uid=%n))
-iterate_attrs = =uid=1000
+user_attrs = =uid=1000, =gid=1000, =home=/var/vmail/%u
+user_filter = (&(objectClass=inetOrgPerson)(uid=%u))
+iterate_attrs = =user=%{ldap:uid}
 iterate_filter = (objectClass=inetOrgPerson)
 EOF
 chmod 600 /etc/dovecot/dovecot-ldap.conf.ext

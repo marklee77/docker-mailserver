@@ -1,10 +1,14 @@
-- fusiondirectory, gosa, or phamm?
+- fix dovecot to use static userdb? -- seems more efficient
+- do we really need an ldap service user?
+
+- let's encrypt certificates
 
 - http://blog.dovecot.org/2012/02/dovecot-clustering-with-dsync-based.html
 - http://wiki.dovecot.org/Replication -- ha cluster
 - http://wiki.dovecot.org/PasswordDatabase/ExtraFields/Proxy
 - https://www.howtoforge.com/postfix-virtual-hosting-with-ldap-backend-and-dovecot-imap-pop3-on-ubuntu-trusty-tahr-14.04-p3
-- look at sogo for calendering...
+- https://www.own-mailbox.com/
+- look at sogo or owncloud for webmail, addressbook, calender
 
 - look at mailinabox and mailcow
 
@@ -12,7 +16,6 @@
   policy anyway? -- look more at spamassassin
 - check on appropriate docker volume settings
 - consider dovecot sdbox/mdbox format instead of maildir
-- http://wiki.dovecot.org/HowTo/LDAPdiablo
 - slapd db init mechanism, add back in modules, schema
 - get ssl working, then make it so everything knows when not to require it
 - maybe postgrey instead of sqlgrey?
