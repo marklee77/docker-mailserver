@@ -62,7 +62,7 @@ base = ou=people,$dovecot_ldap_basedn
 scope = onelevel
 deref = never
 pass_attrs = uid=user, userPassword=password
-pass_filter = (&(objectClass=gosaMailAccount)(|(uid=%u)(mail=%u)))
+pass_filter = (&(objectClass=gosaMailAccount)(uid=%u))
 user_attrs = uid=user
 user_filter = (&(objectClass=gosaMailAccount)(|(uid=%u)(mail=%u)))
 iterate_attrs = uid=user
