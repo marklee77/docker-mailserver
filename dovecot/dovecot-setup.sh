@@ -8,7 +8,7 @@
 : ${dovecot_ldap_url:=ldap://ldap}
 : ${dovecot_ldap_tls:=yes}
 : ${dovecot_ldap_tls_ca_cert_file:=$dovecot_ssl_ca_cert_file}
-: ${dovecot_ldap_tls_require_cert:=yes}
+: ${dovecot_ldap_tls_require_cert:=hard}
 : ${dovecot_ldap_basedn:=dc=ldap,dc=dit}
 : ${dovecot_ldap_password:=password}
 
