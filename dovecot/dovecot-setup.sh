@@ -19,10 +19,6 @@ docker_network=$(ip a s eth0 | sed -n '/^\s*inet \([^ ]*\).*/{s//\1/p;q}')
 
 umask 0022
 
-if [ -f "/etc/dovecot/dovecot.conf" ]; then
-  exec /usr/sbin/dovecot -F -c /etc/dovecot/dovecot.conf
-fi
-
 if ! [ -f "$dovecot_ssl_cert_file" ]; then
     openssl req -newkey rsa:2048 -x509 -nodes -days 365 \
         -subj "/CN=$(hostname)" \
@@ -30,6 +26,8 @@ if ! [ -f "$dovecot_ssl_cert_file" ]; then
 fi
 
 update-ca-certificates
+
+[ -f "/etc/dovecot/dovecot.conf" ] && exit 0
 
 cat > /etc/cron.daily/dovecot-solr-optimize <<EOF
 #!/bin/bash

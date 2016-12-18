@@ -21,9 +21,10 @@ RUN groupadd -g 1000 vmail
 RUN useradd -g 1000 -u 1000 -d /var/mail -s /bin/false vmail
 RUN rm -rf /etc/dovecot/*
 
-COPY dovecot.sh /etc/service/dovecot/run
+COPY dovecot-setup.sh /etc/my_init.d/00-dovecot-setup
+COPY dovecot-run.sh /etc/service/dovecot/run
+RUN chmod 755 /etc/my_init.d/00-dovecot-setup /etc/service/dovecot/run
 
-VOLUME [ "/etc/dovecot", "/etc/ssl", "/usr/local/share/ca-certificates", \
-         "/var/lib/dovecot", "/var/log", "/var/vmail" ]
+VOLUME [ "/etc/dovecot", "/var/vmail" ]
 
 EXPOSE 110 143 4190 8025 8100
