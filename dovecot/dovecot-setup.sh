@@ -70,6 +70,7 @@ iterate_filter = (objectClass=gosaMailAccount)
 EOF
 chmod 600 /etc/dovecot/dovecot-ldap.conf.ext
 ln -s dovecot-ldap.conf.ext /etc/dovecot/dovecot-ldap-passdb.conf.ext
+ln -s dovecot-ldap.conf.ext /etc/dovecot/dovecot-ldap-userdb.conf.ext
 
 cat > /etc/dovecot/dovecot.conf <<EOF
 protocols = imap pop3 sieve lmtp
