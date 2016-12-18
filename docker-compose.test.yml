@@ -1,0 +1,47 @@
+version: '2'
+
+services:
+  postfix:
+    build: postfix
+    depends_on:
+      - dovecot
+      - ldap
+      - db
+    links:
+      - dovecot
+    environment:
+      postfix_ldap_password:
+      postfix_ldap_tls: 'no'
+
+  dovecot:
+    build: dovecot
+    depends_on:
+      - ldap
+      - solr
+    links:
+      - ldap
+      - solr
+    volumes:
+      - ./test/dovecot/vmail/test:/var/vmail/test
+    ports:
+      - "143:143"
+    environment:
+      dovecot_ldap_passwd: password
+
+  solr:
+    build: solr
+
+  #tika:
+  #  image: logicalspark/docker-tikaserver
+
+  ldap:
+    image: marklee77/fusiondirectory
+    volumes:
+      - ./test/ldap/dbinit.d:/etc/ldap/dbinit.d/10-mailserver-test
+    environment:
+      dovecot_ldap_passwd: password
+
+  db:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD:

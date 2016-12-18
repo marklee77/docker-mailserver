@@ -1,4 +1,5 @@
 #!/bin/bash
+# FIXME: get forwarding address info...gosaMailForwardingAddress
 
 : ${postfix_fqdn:=localhost.localdomain}
 : ${postfix_domain:=localdomain}
@@ -110,7 +111,7 @@ bind_pw = $postfix_ldap_password
 base = $postfix_ldap_basedn
 scope = sub
 dereference = 0
-result_attribute = FIXME
+result_attribute = gosaMailAlternateAddress
 EOF
 
 cat > /etc/postfix/main.cf <<EOF
