@@ -1,6 +1,7 @@
 version: '2'
 
 services:
+
   postfix:
     build: postfix
     depends_on:
@@ -9,39 +10,50 @@ services:
       - db
     links:
       - dovecot
+    volumes:
+      - ./test/ssl:/etc/ssl/slapd
     environment:
-      postfix_ldap_password:
-      postfix_ldap_tls: 'no'
+      postfix_ldap_password: password
+      postfix_ldap_tls_ca_cert_file: /etc/ssl/slapd/slapd-ca.crt
 
   dovecot:
     build: dovecot
     depends_on:
       - ldap
       - solr
+      - tika
     links:
       - ldap
       - solr
+      - tika
     volumes:
+      - ./test/ssl:/etc/ssl/slapd
       - ./test/dovecot/vmail/test:/var/vmail/test
     ports:
       - "143:143"
     environment:
       dovecot_ldap_passwd: password
+      dovecot_ldap_tls_ca_cert_file: /etc/ssl/slapd/slapd-ca.crt
 
   solr:
     build: solr
 
-  #tika:
-  #  image: logicalspark/docker-tikaserver
+  tika:
+    image: logicalspark/docker-tikaserver
 
   ldap:
     image: marklee77/fusiondirectory
+    hostname: ldap
     volumes:
+      - ./test/ssl:/etc/ssl/slapd
       - ./test/ldap/dbinit.d:/etc/ldap/dbinit.d/10-mailserver-test
+    ports:
+      - "127.0.0.1:80:80"
     environment:
+      fusiondirectory_admin_password: password
       dovecot_ldap_passwd: password
 
   db:
     image: postgres
     environment:
-      POSTGRES_PASSWORD:
+      POSTGRES_PASSWORD: password
