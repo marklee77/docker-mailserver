@@ -1,6 +1,7 @@
 #!/bin/bash
 
 : ${dovecot_ssl:=required}
+: ${dovecot_ssl_dh_file:=/etc/ssl/dovecot/dh4096.pem}
 : ${dovecot_ssl_cert_file:=/etc/ssl/dovecot/dovecot.crt}
 : ${dovecot_ssl_key_file:=/etc/ssl/dovecot/dovecot.key}
 
@@ -47,8 +48,6 @@ cat > /etc/cron.d/dovecot <<EOF
 * * * * * dovecot curl $dovecot_solr_url/update?commit=true &>/dev/null
 EOF
 
-rm -f /var/lib/dovecot/ssl-parameters.dat
-
 cat > /etc/dovecot/dovecot-ldap.conf.ext <<EOF
 uris = $dovecot_ldap_url
 ldap_version = 3
@@ -82,6 +81,7 @@ ssl_cipher_list = EECDH+AESGCM:EDH+AESGCM:EECDH+AES256:EDH+AES256
 ssl_prefer_server_ciphers = yes
 ssl_options = no_compression
 ssl_dh_parameters_length = 4096
+ssl_dh = <$dovecot_ssl_dh_file
 ssl_cert = <$dovecot_ssl_cert_file
 ssl_key = <$dovecot_ssl_key_file
 
