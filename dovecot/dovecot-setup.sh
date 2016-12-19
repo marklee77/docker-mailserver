@@ -12,8 +12,8 @@
 : ${dovecot_ldap_basedn:=dc=ldap,dc=dit}
 : ${dovecot_ldap_password:=password}
 
-: ${dovecot_solr_url:=http://solr:8983/solr/dovecot/}
-: ${dovecot_tika_url:=http://tika:9998/tika/}
+: ${dovecot_solr_url:=http://solr:8983/solr/dovecot}
+: ${dovecot_tika_url:=http://tika:9998/tika}
 
 docker_network=$(ip a s eth0 | sed -n '/^\s*inet \([^ ]*\).*/{s//\1/p;q}')
 
@@ -26,27 +26,7 @@ if ! [ -f "$dovecot_ssl_cert_file" ]; then
         -out $dovecot_ssl_cert_file -keyout $dovecot_ssl_key_file
 fi
 
-# set normal umask
-umask 0022
-
 [ -f "/etc/dovecot/dovecot.conf" ] && exit 0
-
-cat > /etc/cron.daily/dovecot-solr-optimize <<EOF
-#!/bin/bash
-curl $dovecot_solr_url/update?optimize=true &>/dev/null
-EOF
-chmod 755 /etc/cron.daily/dovecot-solr-optimize
-
-cat > /etc/cron.daily/dovecot-expunge <<EOF
-#!/bin/bash
-doveadm expunge -A mailbox Spam savedbefore 60d
-doveadm expunge -A mailbox Trash savedbefore 60d
-EOF
-chmod 755 /etc/cron.daily/dovecot-expunge
-
-cat > /etc/cron.d/dovecot <<EOF
-* * * * * dovecot curl $dovecot_solr_url/update?commit=true &>/dev/null
-EOF
 
 cat > /etc/dovecot/dovecot-ldap.conf.ext <<EOF
 uris = $dovecot_ldap_url
@@ -68,9 +48,11 @@ user_filter = (&(objectClass=gosaMailAccount)(|(uid=%u)(mail=%u)))
 iterate_attrs = uid=user
 iterate_filter = (objectClass=gosaMailAccount)
 EOF
-chmod 600 /etc/dovecot/dovecot-ldap.conf.ext
 ln -s dovecot-ldap.conf.ext /etc/dovecot/dovecot-ldap-passdb.conf.ext
 ln -s dovecot-ldap.conf.ext /etc/dovecot/dovecot-ldap-userdb.conf.ext
+
+# set normal umask
+umask 0022
 
 cat > /etc/dovecot/dovecot.conf <<EOF
 protocols = imap pop3 sieve lmtp
@@ -81,7 +63,8 @@ ssl_cipher_list = EECDH+AESGCM:EDH+AESGCM:EECDH+AES256:EDH+AES256
 ssl_prefer_server_ciphers = yes
 ssl_options = no_compression
 ssl_dh_parameters_length = 4096
-ssl_dh = <$dovecot_ssl_dh_file
+# ssl_dh not supported until 2.3+
+#ssl_dh = <$dovecot_ssl_dh_file
 ssl_cert = <$dovecot_ssl_cert_file
 ssl_key = <$dovecot_ssl_key_file
 
@@ -154,8 +137,8 @@ plugin {
   # fts configuration
   fts_autoindex = yes
   fts = solr
-  fts_solr = break-imap-search url=$dovecot_solr_url
-  fts_tika = $dovecot_tika_url
+  fts_solr = break-imap-search url=$dovecot_solr_url/
+  fts_tika = $dovecot_tika_url/
 
   # sieve configuration
   sieve = ~/sieve.default
@@ -210,4 +193,21 @@ protocol lmtp {
   quota_full_tempfail = yes
   rejection_reason = Your message to <%t> was automatically rejected:%n%r
 }
+EOF
+
+cat > /etc/cron.daily/dovecot-solr-optimize <<EOF
+#!/bin/bash
+curl "$dovecot_solr_url/update?optimize=true" &>/dev/null
+EOF
+chmod 755 /etc/cron.daily/dovecot-solr-optimize
+
+cat > /etc/cron.daily/dovecot-expunge <<EOF
+#!/bin/bash
+doveadm expunge -A mailbox Spam savedbefore 60d
+doveadm expunge -A mailbox Trash savedbefore 60d
+EOF
+chmod 755 /etc/cron.daily/dovecot-expunge
+
+cat > /etc/cron.d/dovecot <<EOF
+* * * * * dovecot curl "$dovecot_solr_url/update?commit=true" &>/dev/null
 EOF
