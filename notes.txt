@@ -1,3 +1,6 @@
+ssl-parameters.dat
+
+- http://wiki.dovecot.org/SSL/DovecotConfiguration
 - just need to futz with some config parameters and decide how do deal w/ ssl...
 - maybe fusiondirectory can also do certbot? -- not really, want internally
   signed for auth...

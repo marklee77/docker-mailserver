@@ -11,10 +11,10 @@ services:
     links:
       - dovecot
     volumes:
-      - ./test/ssl:/etc/ssl/slapd
+      - ./test/ssl:/etc/ssl/postfix
     environment:
       postfix_ldap_password: password
-      postfix_ldap_tls_ca_cert_file: /etc/ssl/slapd/slapd-ca.crt
+      postfix_ldap_tls_ca_cert_file: /etc/ssl/postfix/slapd-ca.crt
 
   dovecot:
     build: dovecot
@@ -27,13 +27,13 @@ services:
       - solr
       - tika
     volumes:
-      - ./test/ssl:/etc/ssl/slapd
+      - ./test/ssl:/etc/ssl/dovecot
       - ./test/dovecot/vmail/test:/var/lib/vmail/test
     ports:
       - "143:143"
     environment:
       dovecot_ldap_passwd: password
-      dovecot_ldap_tls_ca_cert_file: /etc/ssl/slapd/slapd-ca.crt
+      dovecot_ldap_tls_ca_cert_file: /etc/ssl/dovecot/slapd-ca.crt
 
   solr:
     build: solr

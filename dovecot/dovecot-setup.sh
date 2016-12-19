@@ -1,13 +1,12 @@
 #!/bin/bash
 
 : ${dovecot_ssl:=required}
-: ${dovecot_ssl_ca_cert_file:=/etc/ssl/certs/ca-certificates.crt}
-: ${dovecot_ssl_cert_file:=/usr/local/share/ca-certificates/dovecot.crt}
-: ${dovecot_ssl_key_file:=/etc/ssl/private/dovecot.key}
+: ${dovecot_ssl_cert_file:=/etc/ssl/dovecot/dovecot.crt}
+: ${dovecot_ssl_key_file:=/etc/ssl/dovecot/dovecot.key}
 
 : ${dovecot_ldap_url:=ldap://ldap}
 : ${dovecot_ldap_tls:=yes}
-: ${dovecot_ldap_tls_ca_cert_file:=$dovecot_ssl_ca_cert_file}
+: ${dovecot_ldap_tls_ca_cert_file:=/etc/ssl/certs/ca-certificates.crt}
 : ${dovecot_ldap_tls_require_cert:=hard}
 : ${dovecot_ldap_basedn:=dc=ldap,dc=dit}
 : ${dovecot_ldap_password:=password}
@@ -17,7 +16,8 @@
 
 docker_network=$(ip a s eth0 | sed -n '/^\s*inet \([^ ]*\).*/{s//\1/p;q}')
 
-umask 0022
+# set secure umask
+umask 0227
 
 if ! [ -f "$dovecot_ssl_cert_file" ]; then
     openssl req -newkey rsa:2048 -x509 -nodes -days 365 \
@@ -25,7 +25,8 @@ if ! [ -f "$dovecot_ssl_cert_file" ]; then
         -out $dovecot_ssl_cert_file -keyout $dovecot_ssl_key_file
 fi
 
-update-ca-certificates
+# set normal umask
+umask 0022
 
 [ -f "/etc/dovecot/dovecot.conf" ] && exit 0
 
