@@ -28,7 +28,7 @@ services:
       - tika
     volumes:
       - ./test/ssl:/etc/ssl/slapd
-      - ./test/dovecot/vmail/test:/var/vmail/test
+      - ./test/dovecot/vmail/test:/var/lib/vmail/test
     ports:
       - "143:143"
     environment:

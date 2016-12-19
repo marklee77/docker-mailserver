@@ -18,13 +18,14 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
 RUN groupadd -g 1000 vmail
-RUN useradd -g 1000 -u 1000 -d /var/mail -s /bin/false vmail
+RUN useradd -g 1000 -u 1000 -d /var/lib/vmail -s /bin/false vmail
+RUN mkdir -m 770 -p /var/lib/vmail && chown vmail:vmail /var/lib/vmail
 RUN rm -rf /etc/dovecot/*
 
 COPY dovecot-setup.sh /etc/my_init.d/00-dovecot-setup
 COPY dovecot-run.sh /etc/service/dovecot/run
 RUN chmod 755 /etc/my_init.d/00-dovecot-setup /etc/service/dovecot/run
 
-VOLUME [ "/etc/dovecot", "/var/vmail" ]
+VOLUME [ "/etc/dovecot", "/var/lib/vmail" ]
 
 EXPOSE 110 143 4190 8025 8100

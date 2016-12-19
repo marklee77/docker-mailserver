@@ -22,7 +22,7 @@ services:
       - ldap
       - solr
     volumes:
-      - ./test:/var/vmail/test
+      - ./test:/var/lib/vmail/test
     ports:
       - "143:143"
     environment:

@@ -101,7 +101,7 @@ userdb {
 
 mail_uid = vmail
 mail_gid = vmail
-mail_home = /var/vmail/%u
+mail_home = /var/lib/vmail/%u
 mail_location = maildir:~/Maildir
 
 namespace inbox {
@@ -154,7 +154,7 @@ plugin {
   fts_autoindex = yes
   fts = solr
   fts_solr = break-imap-search url=$dovecot_solr_url
-  #fts_tika = $dovecot_tika_url
+  fts_tika = $dovecot_tika_url
 
   # sieve configuration
   sieve = ~/sieve.default
