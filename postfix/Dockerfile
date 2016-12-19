@@ -1,6 +1,8 @@
 FROM phusion/baseimage:latest
 MAINTAINER Mark Stillwell <mark@stillwell.me>
 
+RUN /bin/bash -c "rm -f /etc/cron.{daily,weekly}/{apt-compat,bsdmainutils,man-db,passwd}"
+
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update && \
     apt-get -y install \
@@ -14,13 +16,12 @@ RUN apt-get update && \
         sqlgrey && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
-RUN rm /etc/dkimkeys/* -rf /etc/postfix/* /etc/opend{kim,marc}.conf
+RUN rm -rf /etc/dkimkeys/* /etc/opendkim.conf /etc/opendmarc.conf /etc/postfix/*
 
-ADD postfix.sh /etc/service/postfix/run
+COPY postfix-setup.sh /etc/my_init.d/00-postfix-setup
+COPY postfix-run.sh /etc/service/postfix/run
+RUN chmod 755 /etc/my_init.d/00-postfix-setup /etc/service/postfix/run
 
-# data volumes
-VOLUME [ "/etc/dkimkeys", "/etc/postfix", "/etc/ssl", "/usr/local/share/ca-certificates", \
-         "/var/lib/postfix", "/var/log" ]
+VOLUME [ "/etc/dkimkeys", "/etc/postfix", "/etc/ssl/postfix", "/var/lib/postfix" ]
 
-# interface ports
 EXPOSE 25 587

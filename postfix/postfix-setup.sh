@@ -2,19 +2,16 @@
 # FIXME: get forwarding address info...gosaMailForwardingAddress
 
 : ${postfix_fqdn:=localhost.localdomain}
-: ${postfix_domain:=localdomain}
-: ${postfix_subdomain_list:=www ftp mail}
 
-: ${postfix_ssl_hostname:=$postfix_fqdn}
 : ${postfix_ssl_ca_cert_file:=/etc/ssl/certs/ca-certificates.crt}
-: ${postfix_ssl_cert_file:=/usr/local/share/ca-certificates/postfix.crt}
-: ${postfix_ssl_key_file:=/etc/ssl/private/postfix.key}
+: ${postfix_ssl_cert_file:=/etc/ssl/postfix/postfix.crt}
+: ${postfix_ssl_key_file:=/etc/ssl/postfix/postfix.key}
 
 : ${postfix_ldap_url:=ldap://ldap}
 : ${postfix_ldap_tls:=yes}
 : ${postfix_ldap_tls_ca_cert_file:=$postfix_ssl_ca_cert_file}
 : ${postfix_ldap_tls_require_cert:=yes}
-: ${postfix_ldap_basedn:=dc=localdomain}
+: ${postfix_ldap_basedn:=dc=ldap,dc=dit}
 : ${postfix_ldap_password:=password}
 
 : ${postfix_sasl_path:=inet:dovecot:8100}
@@ -26,30 +23,51 @@
 
 docker_network=$(ip a s eth0 | sed -n '/^\s*inet \([^ ]*\).*/{s//\1/p;q}')
 
-umask 0022
-
-if [ -f "/etc/postfix/master.cf" ]; then
-  exec /usr/lib/postfix/sbin/master -d
-fi
+# set secure umask
+umask 0227
 
 if ! [ -f "$postfix_ssl_cert_file" ]; then
     openssl req -newkey rsa:2048 -x509 -nodes -days 365 \
-        -subj "/CN=$postfix_ssl_hostname" \
+        -subj "/CN=$(hostname)" \
         -out $postfix_ssl_cert_file -keyout $postfix_ssl_key_file
 fi
 
-# in case user maps a ca cert into /usr/local/share/ca-certificates
-update-ca-certificates
+[ -f "/etc/postfix/master.cf" ] && exit 0
+
+cat > /etc/postfix/ldap-virtual-recipients.cf << EOF
+server_host = $postfix_ldap_url
+ldap_version = 3
+start_tls = $postfix_ldap_tls
+tls_ca_cert_file = $postfix_ldap_tls_ca_cert_file
+tls_require_cert = $postfix_ldap_tls_require_cert
+bind = yes
+bind_dn = uid=postfix,ou=services,$postfix_ldap_basedn
+bind_pw = $postfix_ldap_password
+base = $postfix_ldap_basedn
+query_filter = (mail=%s)
+result_attribute = mail
+EOF
+
+cat > /etc/postfix/ldap-virtual-aliases.cf << EOF
+server_host = $postfix_ldap_url
+ldap_version = 3
+start_tls = $postfix_ldap_tls
+tls_ca_cert_file = $postfix_ldap_tls_ca_cert_file
+tls_require_cert = $postfix_ldap_tls_require_cert
+bind = yes
+bind_dn = uid=postfix,ou=services,$postfix_ldap_basedn
+bind_pw = $postfix_ldap_password
+base = $postfix_ldap_basedn
+query_filter = (mail=%s)
+result_attribute = gosaMailAlternateAddress, gosaMailForwardingAddress
+EOF
+
+# set normal umask
+umask 0022
 
 echo $postfix_fqdn > /etc/mailname
 
 cat > /etc/postfix/master.cf <<EOF
-# Postfix master process configuration file.  For details on the format
-# of the file, see the master(5) manual page (command: "man 5 master" or
-# on-line: http://www.postfix.org/master.5.html).
-#
-# Do not forget to execute "postfix reload" after editing this file.
-#
 # ==========================================================================
 # service  type  private unpriv  chroot  wakeup  maxproc command + args
 #                (yes)   (yes)   (no)    (never) (100)
@@ -99,21 +117,6 @@ policy-spf unix  -       n       n       -       0       spawn
   user=nobody argv=/usr/bin/policyd-spf
 EOF
 
-cat > /etc/postfix/ldap-aliases.cf <<EOF
-server_host = $postfix_ldap_url
-ldap_version = 3
-start_tls = $postfix_ldap_tls
-tls_ca_cert_file = $postfix_ldap_tls_ca_cert_file
-tls_require_cert = $postfix_ldap_tls_require_cert
-bind = yes
-bind_dn = uid=postfix,ou=services,$postfix_ldap_basedn
-bind_pw = $postfix_ldap_password
-base = $postfix_ldap_basedn
-scope = sub
-dereference = 0
-result_attribute = gosaMailAlternateAddress
-EOF
-
 cat > /etc/postfix/main.cf <<EOF
 # NOTIFICATIONS
 
@@ -127,23 +130,17 @@ myorigin = \$mydomain
 # RECEIVING MAIL
 
 mydestination =
-    localhost,
-    localhost.localdomain,
-    localhost.\$mydomain,
-    \$myhostname,
-    \$myhostname.localdomain,
-    \$myhostname.\$mydomain,
-    ${postfix_subdomain_list:+$(
-        for subdomain in $(eval "echo $postfix_subdomain_list"); do
-            echo -ne "${subdomain},\n    "
-            echo -ne "${subdomain}.\$mydomain,\n    "
-        done)}localdomain,
-    \$mydomain
 
-alias_maps = ldap:/etc/postfix/ldap-aliases.cf
-local_recipient_maps = \$alias_maps
+alias_maps = hash:/etc/aliases
+alias_database = hash:/etc/aliases
 
 mailbox_size_limit = 0
+
+# VIRTUAL USERS
+
+virtual_mailbox_domains = ldap:/etc/postfix/ldap-virtual-mailbox-domains.cf
+virtual_mailbox_maps = ldap:/etc/postfix/ldap-virtual-recipients.cf
+virtual_alias_maps = ldap:/etc/postfix/ldap-virtual-aliases.cf
 
 # TRUST AND RELAY CONTROL
 

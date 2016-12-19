@@ -13,7 +13,9 @@
 - might need to allow appends to spam folder? -- maybe autolearn isn't best
   policy anyway? -- look more at spamassassin
 - amavis
-  - clamav
-  - spamassassin
+  - clamav (own image)
+  - spamassassin (own image)
 - dkim/dmarc
 - filtering with sieve
+- consider moving all from phusion/baseimage to marklee77/supervisor
+- imap/postfix need certs from letsencrypt
