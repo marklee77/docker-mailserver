@@ -34,32 +34,82 @@ fi
 
 [ -f "/etc/postfix/master.cf" ] && exit 0
 
-cat > /etc/postfix/ldap-virtual-recipients.cf << EOF
+cat > /etc/postfix/ldap-virtual-domains.cf <<EOF
+EOF
+
+cat > /etc/postfix/ldap-domains.cf <<EOF
 server_host = $postfix_ldap_url
 ldap_version = 3
 start_tls = $postfix_ldap_tls
 tls_ca_cert_file = $postfix_ldap_tls_ca_cert_file
 tls_require_cert = $postfix_ldap_tls_require_cert
 bind = yes
-bind_dn = uid=postfix,ou=services,$postfix_ldap_basedn
+bind_dn = cn=postfix,ou=dsa,$postfix_ldap_basedn
 bind_pw = $postfix_ldap_password
-base = $postfix_ldap_basedn
-query_filter = (mail=%s)
+search_base = $postfix_ldap_basedn
+scope = one
+query_filter = (&(objectClass=domain)(dc=%s))
+result_attribute = dc
+EOF
+
+cat > /etc/postfix/ldap-accounts.cf <<EOF
+server_host = $postfix_ldap_url
+ldap_version = 3
+start_tls = $postfix_ldap_tls
+tls_ca_cert_file = $postfix_ldap_tls_ca_cert_file
+tls_require_cert = $postfix_ldap_tls_require_cert
+bind = yes
+bind_dn = cn=postfix,ou=dsa,$postfix_ldap_basedn
+bind_pw = $postfix_ldap_password
+search_base = ou=people,$postfix_ldap_basedn
+scope = one
+query_filter = (&(objectClass=gosaMailAccount)(!(gosaMailDeliveryMode=[*I*]))(mail=%s))
 result_attribute = mail
 EOF
 
-cat > /etc/postfix/ldap-virtual-aliases.cf << EOF
+cat > /etc/postfix/ldap-aliases.cf <<EOF
 server_host = $postfix_ldap_url
 ldap_version = 3
 start_tls = $postfix_ldap_tls
 tls_ca_cert_file = $postfix_ldap_tls_ca_cert_file
 tls_require_cert = $postfix_ldap_tls_require_cert
 bind = yes
-bind_dn = uid=postfix,ou=services,$postfix_ldap_basedn
+bind_dn = cn=postfix,ou=dsa,$postfix_ldap_basedn
 bind_pw = $postfix_ldap_password
-base = $postfix_ldap_basedn
-query_filter = (mail=%s)
-result_attribute = gosaMailAlternateAddress, gosaMailForwardingAddress
+search_base = ou=people,$postfix_ldap_basedn
+scope = one
+query_filter = (&(objectClass=gosaMailAccount)(!(gosaMailDeliveryMode=[*I*]))(gosamailAlternateAddress=%s))
+result_attribute = mail
+EOF
+
+cat > /etc/postfix/ldap-forward.cf <<EOF
+server_host = $postfix_ldap_url
+ldap_version = 3
+start_tls = $postfix_ldap_tls
+tls_ca_cert_file = $postfix_ldap_tls_ca_cert_file
+tls_require_cert = $postfix_ldap_tls_require_cert
+bind = yes
+bind_dn = cn=postfix,ou=dsa,$postfix_ldap_basedn
+bind_pw = $postfix_ldap_password
+search_base = ou=people,$postfix_ldap_basedn
+scope = one
+query_filter = (&(objectClass=gosaMailAccount)(!(gosaMailDeliveryMode=[*I*]))(|(mail=%s)(gosamailAlternateAddress=%s)))
+result_attribute = mail,gosaMailForwardingAddress
+EOF
+
+cat > /etc/postfix/ldap-forward-only.cf <<EOF
+server_host = $postfix_ldap_url
+ldap_version = 3
+start_tls = $postfix_ldap_tls
+tls_ca_cert_file = $postfix_ldap_tls_ca_cert_file
+tls_require_cert = $postfix_ldap_tls_require_cert
+bind = yes
+bind_dn = cn=postfix,ou=dsa,$postfix_ldap_basedn
+bind_pw = $postfix_ldap_password
+search_base = ou=people,$postfix_ldap_basedn
+scope = one
+query_filter = (&(objectClass=gosaMailAccount)(!(gosaMailDeliveryMode=[*I*]))(|(mail=%s)(gosamailAlternateAddress=%s)))
+result_attribute = gosaMailForwardingAddress
 EOF
 
 # set normal umask
@@ -130,17 +180,12 @@ myorigin = \$mydomain
 # RECEIVING MAIL
 
 mydestination =
-
-alias_maps = hash:/etc/aliases
-alias_database = hash:/etc/aliases
-
-mailbox_size_limit = 0
-
-# VIRTUAL USERS
-
-virtual_mailbox_domains = ldap:/etc/postfix/ldap-virtual-mailbox-domains.cf
-virtual_mailbox_maps = ldap:/etc/postfix/ldap-virtual-recipients.cf
-virtual_alias_maps = ldap:/etc/postfix/ldap-virtual-aliases.cf
+virtual_transport = $postfix_mailbox_transport
+virtual_mailbox_domains = ldap:/etc/postfix/ldap-domains.cf
+virtual_mailbox_maps = proxy:ldap:/etc/postfix/ldap-accounts.cf
+virtual_alias_maps = proxy:ldap:/etc/postfix/ldap-aliases.cf
+                     proxy:ldap:/etc/postfix/ldap-forward.cf
+                     proxy:ldap:/etc/postfix/ldap-forward-only.cf
 
 # TRUST AND RELAY CONTROL
 
@@ -183,10 +228,6 @@ smtpd_sasl_security_options = noanonymous
 
 append_dot_mydomain = no
 recipient_delimiter = +
-
-# DELIVERY TO MAILBOX
-
-mailbox_transport = $postfix_mailbox_transport
 
 # JUNK MAIL CONTROLS
 

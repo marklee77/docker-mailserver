@@ -32,7 +32,7 @@ services:
     ports:
       - "143:143"
     environment:
-      dovecot_ldap_passwd: password
+      dovecot_ldap_password: password
       dovecot_ldap_tls_ca_cert_file: /etc/ssl/dovecot/slapd-ca.crt
 
   solr:
@@ -51,7 +51,8 @@ services:
       - "127.0.0.1:80:80"
     environment:
       fusiondirectory_admin_password: password
-      dovecot_ldap_passwd: password
+      postfix_ldap_password: password
+      dovecot_ldap_password: password
 
   db:
     image: postgres
