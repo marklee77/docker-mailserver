@@ -22,3 +22,4 @@
 - filtering with sieve
 - consider moving all from phusion/baseimage to marklee77/supervisor
 - imap/postfix need certs from letsencrypt
+- check on address extension: http://wiki.dovecot.org/LMTP

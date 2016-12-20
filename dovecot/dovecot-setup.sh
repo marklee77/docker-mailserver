@@ -151,6 +151,10 @@ service auth {
   inet_listener {
     port = 8100
   }
+
+  unix_listener auth-userdb {
+    group = vmail
+  }
 }
 
 # local delivery
