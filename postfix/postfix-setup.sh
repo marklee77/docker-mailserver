@@ -181,7 +181,7 @@ myorigin = \$mydomain
 
 mydestination =
 virtual_transport = $postfix_mailbox_transport
-virtual_mailbox_domains = ldap:/etc/postfix/ldap-domains.cf
+virtual_mailbox_domains = proxy:ldap:/etc/postfix/ldap-domains.cf
 virtual_mailbox_maps = proxy:ldap:/etc/postfix/ldap-accounts.cf
 virtual_alias_maps = proxy:ldap:/etc/postfix/ldap-aliases.cf
                      proxy:ldap:/etc/postfix/ldap-forward.cf
