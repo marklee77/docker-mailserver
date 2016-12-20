@@ -1,6 +1,4 @@
 #!/bin/bash
-# FIXME: get forwarding address info...gosaMailForwardingAddress
-
 : ${postfix_fqdn:=localhost.localdomain}
 
 : ${postfix_ssl_ca_cert_file:=/etc/ssl/certs/ca-certificates.crt}
@@ -39,7 +37,7 @@ EOF
 
 cat > /etc/postfix/ldap-domains.cf <<EOF
 server_host = $postfix_ldap_url
-ldap_version = 3
+version = 3
 start_tls = $postfix_ldap_tls
 tls_ca_cert_file = $postfix_ldap_tls_ca_cert_file
 tls_require_cert = $postfix_ldap_tls_require_cert
@@ -54,7 +52,7 @@ EOF
 
 cat > /etc/postfix/ldap-accounts.cf <<EOF
 server_host = $postfix_ldap_url
-ldap_version = 3
+version = 3
 start_tls = $postfix_ldap_tls
 tls_ca_cert_file = $postfix_ldap_tls_ca_cert_file
 tls_require_cert = $postfix_ldap_tls_require_cert
@@ -69,7 +67,7 @@ EOF
 
 cat > /etc/postfix/ldap-aliases.cf <<EOF
 server_host = $postfix_ldap_url
-ldap_version = 3
+version = 3
 start_tls = $postfix_ldap_tls
 tls_ca_cert_file = $postfix_ldap_tls_ca_cert_file
 tls_require_cert = $postfix_ldap_tls_require_cert
@@ -84,7 +82,7 @@ EOF
 
 cat > /etc/postfix/ldap-forward.cf <<EOF
 server_host = $postfix_ldap_url
-ldap_version = 3
+version = 3
 start_tls = $postfix_ldap_tls
 tls_ca_cert_file = $postfix_ldap_tls_ca_cert_file
 tls_require_cert = $postfix_ldap_tls_require_cert
@@ -99,7 +97,7 @@ EOF
 
 cat > /etc/postfix/ldap-forward-only.cf <<EOF
 server_host = $postfix_ldap_url
-ldap_version = 3
+version = 3
 start_tls = $postfix_ldap_tls
 tls_ca_cert_file = $postfix_ldap_tls_ca_cert_file
 tls_require_cert = $postfix_ldap_tls_require_cert
@@ -111,6 +109,8 @@ scope = one
 query_filter = (&(objectClass=gosaMailAccount)(!(gosaMailDeliveryMode=[*I*]))(|(mail=%s)(gosamailAlternateAddress=%s)))
 result_attribute = gosaMailForwardingAddress
 EOF
+
+chown postfix:postfix /etc/postfix/ldap-*
 
 # set normal umask
 umask 0022
@@ -272,6 +272,6 @@ smtpd_recipient_restrictions =
 #content_filter = inet:amavis:8025
 
 milter_default_action = accept
-smtpd_milters = unix:opendkim/opendkim.sock unix:opendmarc/opendmarc.sock
-non_smtpd_milters = unix:opendkim/opendkim.sock
+#smtpd_milters = unix:opendkim/opendkim.sock unix:opendmarc/opendmarc.sock
+#non_smtpd_milters = unix:opendkim/opendkim.sock
 EOF
