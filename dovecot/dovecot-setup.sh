@@ -156,7 +156,7 @@ service auth {
 # local delivery
 service lmtp {
   user = vmail
-  inet_listener {
+  inet_listener lmtp {
     port = 8025
   }
 }
