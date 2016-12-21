@@ -32,9 +32,6 @@ fi
 
 [ -f "/etc/postfix/master.cf" ] && exit 0
 
-cat > /etc/postfix/ldap-virtual-domains.cf <<EOF
-EOF
-
 cat > /etc/postfix/ldap-domains.cf <<EOF
 server_host = $postfix_ldap_url
 version = 3
@@ -65,7 +62,7 @@ query_filter = (&(objectClass=gosaMailAccount)(!(gosaMailDeliveryMode=[*I*]))(ma
 result_attribute = mail
 EOF
 
-cat > /etc/postfix/ldap-aliases.cf <<EOF
+cat > /etc/postfix/ldap-alias-distributions.cf <<EOF
 server_host = $postfix_ldap_url
 version = 3
 start_tls = $postfix_ldap_tls
@@ -74,10 +71,29 @@ tls_require_cert = $postfix_ldap_tls_require_cert
 bind = yes
 bind_dn = cn=postfix,ou=dsa,$postfix_ldap_basedn
 bind_pw = $postfix_ldap_password
-search_base = ou=people,$postfix_ldap_basedn
+search_base = ou=alias,$postfix_ldap_basedn
 scope = one
-query_filter = (&(objectClass=gosaMailAccount)(!(gosaMailDeliveryMode=[*I*]))(gosamailAlternateAddress=%s))
+# postfix does not supply a time string and slapd doesn't support NOW,
+# so ignore aliasExpirationdate for the moment.
+query_filter = (&(objectClass=mailAliasDistribution)(gosaMailAlternateAddress=%s))
 result_attribute = mail
+EOF
+
+cat > /etc/postfix/ldap-alias-redirections.cf <<EOF
+server_host = $postfix_ldap_url
+version = 3
+start_tls = $postfix_ldap_tls
+tls_ca_cert_file = $postfix_ldap_tls_ca_cert_file
+tls_require_cert = $postfix_ldap_tls_require_cert
+bind = yes
+bind_dn = cn=postfix,ou=dsa,$postfix_ldap_basedn
+bind_pw = $postfix_ldap_password
+search_base = ou=alias,$postfix_ldap_basedn
+scope = one
+# postfix does not supply a time string and slapd doesn't support NOW,
+# so ignore aliasExpirationdate for the moment.
+query_filter = (&(objectClass=mailAliasRedirection)(mail=%s))
+result_attribute = gosaMailForwardingAddress
 EOF
 
 cat > /etc/postfix/ldap-forward.cf <<EOF
@@ -106,8 +122,23 @@ bind_dn = cn=postfix,ou=dsa,$postfix_ldap_basedn
 bind_pw = $postfix_ldap_password
 search_base = ou=people,$postfix_ldap_basedn
 scope = one
-query_filter = (&(objectClass=gosaMailAccount)(!(gosaMailDeliveryMode=[*I*]))(|(mail=%s)(gosamailAlternateAddress=%s)))
+query_filter = (&(objectClass=gosaMailAccount)(gosaMailDeliveryMode=[*I*])(|(mail=%s)(gosamailAlternateAddress=%s)))
 result_attribute = gosaMailForwardingAddress
+EOF
+
+cat > /etc/postfix/ldap-alternates.cf <<EOF
+server_host = $postfix_ldap_url
+version = 3
+start_tls = $postfix_ldap_tls
+tls_ca_cert_file = $postfix_ldap_tls_ca_cert_file
+tls_require_cert = $postfix_ldap_tls_require_cert
+bind = yes
+bind_dn = cn=postfix,ou=dsa,$postfix_ldap_basedn
+bind_pw = $postfix_ldap_password
+search_base = ou=people,$postfix_ldap_basedn
+scope = one
+query_filter = (&(objectClass=gosaMailAccount)(!(gosaMailDeliveryMode=[*I*]))(gosamailAlternateAddress=%s))
+result_attribute = mail
 EOF
 
 chown postfix:postfix /etc/postfix/ldap-*
@@ -183,9 +214,11 @@ mydestination =
 virtual_transport = $postfix_mailbox_transport
 virtual_mailbox_domains = proxy:ldap:/etc/postfix/ldap-domains.cf
 virtual_mailbox_maps = proxy:ldap:/etc/postfix/ldap-accounts.cf
-virtual_alias_maps = proxy:ldap:/etc/postfix/ldap-aliases.cf
+virtual_alias_maps = proxy:ldap:/etc/postfix/ldap-alias-distributions.cf
+                     proxy:ldap:/etc/postfix/ldap-alias-redirections.cf
                      proxy:ldap:/etc/postfix/ldap-forward.cf
                      proxy:ldap:/etc/postfix/ldap-forward-only.cf
+                     proxy:ldap:/etc/postfix/ldap-alternates.cf
 
 # TRUST AND RELAY CONTROL
 

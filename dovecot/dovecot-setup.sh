@@ -69,7 +69,7 @@ elsif anyof (true)
         fileinto :copy "Archive";
 }
 EOF
-sievec /var/lib/dovecot/sieve/
+sievec /var/lib/dovecot/sieve/default.sieve
 
 cat > /etc/dovecot/dovecot.conf <<EOF
 protocols = imap pop3 sieve lmtp
