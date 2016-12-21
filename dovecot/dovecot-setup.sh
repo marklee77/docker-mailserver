@@ -43,7 +43,7 @@ scope = onelevel
 deref = never
 pass_attrs = uid=user, userPassword=password
 pass_filter = (&(objectClass=gosaMailAccount)(uid=%u))
-user_attrs = uid=user
+user_attrs = uid=user gosaMailQuota=quota_rule=*:storage=%{ldap:gosaMailQuota}M
 user_filter = (&(objectClass=gosaMailAccount)(|(uid=%u)(mail=%u)))
 iterate_attrs = uid=user
 iterate_filter = (objectClass=gosaMailAccount)
@@ -53,6 +53,23 @@ ln -s dovecot-ldap.conf.ext /etc/dovecot/dovecot-ldap-userdb.conf.ext
 
 # set normal umask
 umask 0022
+
+mkdir -p /var/lib/dovecot/sieve
+cat > /var/lib/dovecot/sieve/default.sieve <<EOF
+require ["fileinto","copy"];
+
+# rule:[spam]
+if anyof (header :is "X-Spam-Flag" "yes")
+{
+        fileinto "Spam";
+}
+# rule:[archive]
+elsif anyof (true)
+{
+        fileinto :copy "Archive";
+}
+EOF
+sievec /var/lib/dovecot/sieve/
 
 cat > /etc/dovecot/dovecot.conf <<EOF
 protocols = imap pop3 sieve lmtp
@@ -141,8 +158,11 @@ plugin {
   fts_tika = $dovecot_tika_url/
 
   # sieve configuration
-  sieve = ~/sieve.default
-  sieve_dir = ~/sieve.d
+  sieve = file:~/sieve.d;active=~/dovecot.sieve
+  sieve_max_script_size = 1M
+  sieve_max_actions = 256
+  sieve_default = /var/lib/dovecot/sieve/default.sieve
+  sieve_default_name = default
 
 }
 

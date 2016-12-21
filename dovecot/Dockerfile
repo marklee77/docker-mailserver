@@ -28,6 +28,6 @@ COPY dovecot-setup.sh /etc/my_init.d/00-dovecot-setup
 COPY dovecot-run.sh /etc/service/dovecot/run
 RUN chmod 755 /etc/my_init.d/00-dovecot-setup /etc/service/dovecot/run
 
-VOLUME [ "/etc/dovecot", "/etc/ssl/dovecot", "/var/lib/vmail" ]
+VOLUME [ "/etc/dovecot", "/etc/ssl/dovecot", "/var/lib/dovecot", "/var/lib/vmail" ]
 
 EXPOSE 110 143 4190 8025 8100
