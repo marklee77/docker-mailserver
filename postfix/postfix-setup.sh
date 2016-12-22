@@ -107,7 +107,7 @@ bind_dn = cn=postfix,ou=dsa,$postfix_ldap_basedn
 bind_pw = $postfix_ldap_password
 search_base = ou=people,$postfix_ldap_basedn
 scope = one
-query_filter = (&(objectClass=gosaMailAccount)(!(gosaMailDeliveryMode=[*I*]))(|(mail=%s)(gosamailAlternateAddress=%s)))
+query_filter = (&(objectClass=gosaMailAccount)(!(gosaMailDeliveryMode=[*I*]))(|(mail=%s)(gosaMailAlternateAddress=%s)))
 result_attribute = mail,gosaMailForwardingAddress
 EOF
 
@@ -122,7 +122,7 @@ bind_dn = cn=postfix,ou=dsa,$postfix_ldap_basedn
 bind_pw = $postfix_ldap_password
 search_base = ou=people,$postfix_ldap_basedn
 scope = one
-query_filter = (&(objectClass=gosaMailAccount)(gosaMailDeliveryMode=[*I*])(|(mail=%s)(gosamailAlternateAddress=%s)))
+query_filter = (&(objectClass=gosaMailAccount)(gosaMailDeliveryMode=[*I*])(|(mail=%s)(gosaMailAlternateAddress=%s)))
 result_attribute = gosaMailForwardingAddress
 EOF
 
@@ -137,7 +137,7 @@ bind_dn = cn=postfix,ou=dsa,$postfix_ldap_basedn
 bind_pw = $postfix_ldap_password
 search_base = ou=people,$postfix_ldap_basedn
 scope = one
-query_filter = (&(objectClass=gosaMailAccount)(!(gosaMailDeliveryMode=[*I*]))(gosamailAlternateAddress=%s))
+query_filter = (&(objectClass=gosaMailAccount)(!(gosaMailDeliveryMode=[*I*]))(gosaMailAlternateAddress=%s))
 result_attribute = mail
 EOF
 
