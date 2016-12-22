@@ -1,7 +1,7 @@
 #!/bin/bash
 
 : ${dovecot_ssl:=required}
-: ${dovecot_ssl_dh_file:=/etc/ssl/dovecot/dh4096.pem}
+: ${dovecot_ssl_dh_parameters_length:=4096}
 : ${dovecot_ssl_cert_file:=/etc/ssl/dovecot/dovecot.crt}
 : ${dovecot_ssl_key_file:=/etc/ssl/dovecot/dovecot.key}
 
@@ -41,9 +41,7 @@ auth_bind_userdn = uid=%u,ou=people,$dovecot_ldap_basedn
 base = ou=people,$dovecot_ldap_basedn
 scope = onelevel
 deref = never
-pass_attrs = uid=user, userPassword=password
-pass_filter = (&(objectClass=gosaMailAccount)(uid=%u))
-user_attrs = uid=user gosaMailQuota=quota_rule=*:storage=%{ldap:gosaMailQuota}M
+user_attrs = uid=user,gosaMailQuota=quota_rule=*:storage=%{ldap:gosaMailQuota}M
 user_filter = (&(objectClass=gosaMailAccount)(|(uid=%u)(mail=%u)))
 iterate_attrs = uid=user
 iterate_filter = (objectClass=gosaMailAccount)
@@ -54,23 +52,6 @@ ln -s dovecot-ldap.conf.ext /etc/dovecot/dovecot-ldap-userdb.conf.ext
 # set normal umask
 umask 0022
 
-mkdir -p /var/lib/dovecot/sieve
-cat > /var/lib/dovecot/sieve/default.sieve <<EOF
-require ["fileinto","copy"];
-
-# rule:[spam]
-if anyof (header :is "X-Spam-Flag" "yes")
-{
-        fileinto "Spam";
-}
-# rule:[archive]
-elsif anyof (true)
-{
-        fileinto :copy "Archive";
-}
-EOF
-sievec /var/lib/dovecot/sieve/default.sieve
-
 cat > /etc/dovecot/dovecot.conf <<EOF
 protocols = imap pop3 sieve lmtp
 
@@ -79,9 +60,7 @@ ssl_protocols = !SSLv2 !SSLv3
 ssl_cipher_list = EECDH+AESGCM:EDH+AESGCM:EECDH+AES256:EDH+AES256
 ssl_prefer_server_ciphers = yes
 ssl_options = no_compression
-ssl_dh_parameters_length = 4096
-# ssl_dh not supported until 2.3+
-#ssl_dh = <$dovecot_ssl_dh_file
+ssl_dh_parameters_length = $dovecot_ssl_dh_parameters_length
 ssl_cert = <$dovecot_ssl_cert_file
 ssl_key = <$dovecot_ssl_key_file
 
@@ -161,7 +140,7 @@ plugin {
   sieve = file:~/sieve.d;active=~/dovecot.sieve
   sieve_max_script_size = 1M
   sieve_max_actions = 256
-  sieve_default = /var/lib/dovecot/sieve/default.sieve
+  sieve_default = /var/lib/dovecot/default.sieve
   sieve_default_name = default
 
 }

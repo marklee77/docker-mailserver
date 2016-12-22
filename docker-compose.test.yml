@@ -34,6 +34,7 @@ services:
     environment:
       dovecot_ldap_password: password
       dovecot_ldap_tls_ca_cert_file: /etc/ssl/dovecot/slapd-ca.crt
+      dovecot_ssl_dh_parameters_length: "1024"
 
   solr:
     build: solr
