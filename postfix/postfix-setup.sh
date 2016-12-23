@@ -272,10 +272,11 @@ disable_vrfy_command = yes
 strict_rfc821_envelopes = yes
 message_size_limit = $postfix_message_size_limit
 
+postscreen_access_list = permit_mynetworks
 postscreen_greet_action = enforce
 postscreen_dnsbl_action = enforce
-postscreen_access_list = permit_mynetworks
 postscreen_dnsbl_sites = ${postfix_rbl_list// /, }
+postscreen_dnsbl_threshold = 2
 
 policy-spf_time_limit = 3600s
 
@@ -301,8 +302,6 @@ smtpd_recipient_restrictions =
         done)}check_policy_service unix:private/policy-spf,
 #    check_policy_service unix:sqlgrey/sqlgrey.sock,
     permit
-
-#content_filter = inet:amavis:8025
 
 milter_default_action = accept
 #smtpd_milters = unix:opendkim/opendkim.sock unix:opendmarc/opendmarc.sock
