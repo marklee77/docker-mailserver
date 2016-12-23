@@ -7,4 +7,8 @@
 eval "$(perl -pe 'exit 0 if /^case/' < /etc/init.d/postfix)"
 configure_instance
 
+cd /var/spool/postfix
+mkdir -p hold trace
+chown postfix hold trace
+
 exec /usr/lib/postfix/sbin/master -d

@@ -12,9 +12,6 @@
 : ${postfix_ldap_basedn:=dc=ldap,dc=dit}
 : ${postfix_ldap_password:=password}
 
-: ${postfix_sasl_path:=inet:dovecot:8100}
-: ${postfix_mailbox_transport:=lmtp:inet:dovecot:8025}
-
 : ${postfix_rbl_list:=zen.spamhaus.org psbl.surriel.com dnsbl.sorbs.net}
 : ${postfix_rhsbl_list:=rhsbl.sorbs.net}
 : ${postfix_message_size_limit:=104857600}
@@ -41,8 +38,8 @@ tls_require_cert = $postfix_ldap_tls_require_cert
 bind = yes
 bind_dn = cn=postfix,ou=dsa,$postfix_ldap_basedn
 bind_pw = $postfix_ldap_password
-search_base = $postfix_ldap_basedn
 scope = one
+search_base = $postfix_ldap_basedn
 query_filter = (&(objectClass=domain)(dc=%s))
 result_attribute = dc
 EOF
@@ -56,8 +53,8 @@ tls_require_cert = $postfix_ldap_tls_require_cert
 bind = yes
 bind_dn = cn=postfix,ou=dsa,$postfix_ldap_basedn
 bind_pw = $postfix_ldap_password
-search_base = ou=people,$postfix_ldap_basedn
 scope = one
+search_base = ou=people,$postfix_ldap_basedn
 query_filter = (&(objectClass=gosaMailAccount)(!(gosaMailDeliveryMode=[*I*]))(mail=%s))
 result_attribute = mail
 EOF
@@ -71,8 +68,8 @@ tls_require_cert = $postfix_ldap_tls_require_cert
 bind = yes
 bind_dn = cn=postfix,ou=dsa,$postfix_ldap_basedn
 bind_pw = $postfix_ldap_password
-search_base = ou=alias,$postfix_ldap_basedn
 scope = one
+search_base = ou=alias,$postfix_ldap_basedn
 # postfix does not supply a time string and slapd doesn't support NOW,
 # so ignore aliasExpirationdate for the moment.
 query_filter = (&(objectClass=mailAliasDistribution)(gosaMailAlternateAddress=%s))
@@ -88,8 +85,8 @@ tls_require_cert = $postfix_ldap_tls_require_cert
 bind = yes
 bind_dn = cn=postfix,ou=dsa,$postfix_ldap_basedn
 bind_pw = $postfix_ldap_password
-search_base = ou=alias,$postfix_ldap_basedn
 scope = one
+search_base = ou=alias,$postfix_ldap_basedn
 # postfix does not supply a time string and slapd doesn't support NOW,
 # so ignore aliasExpirationdate for the moment.
 query_filter = (&(objectClass=mailAliasRedirection)(mail=%s))
@@ -105,8 +102,8 @@ tls_require_cert = $postfix_ldap_tls_require_cert
 bind = yes
 bind_dn = cn=postfix,ou=dsa,$postfix_ldap_basedn
 bind_pw = $postfix_ldap_password
-search_base = ou=people,$postfix_ldap_basedn
 scope = one
+search_base = ou=people,$postfix_ldap_basedn
 query_filter = (&(objectClass=gosaMailAccount)(!(gosaMailDeliveryMode=[*I*]))(|(mail=%s)(gosaMailAlternateAddress=%s)))
 result_attribute = mail,gosaMailForwardingAddress
 EOF
@@ -120,8 +117,8 @@ tls_require_cert = $postfix_ldap_tls_require_cert
 bind = yes
 bind_dn = cn=postfix,ou=dsa,$postfix_ldap_basedn
 bind_pw = $postfix_ldap_password
-search_base = ou=people,$postfix_ldap_basedn
 scope = one
+search_base = ou=people,$postfix_ldap_basedn
 query_filter = (&(objectClass=gosaMailAccount)(gosaMailDeliveryMode=[*I*])(|(mail=%s)(gosaMailAlternateAddress=%s)))
 result_attribute = gosaMailForwardingAddress
 EOF
@@ -135,13 +132,13 @@ tls_require_cert = $postfix_ldap_tls_require_cert
 bind = yes
 bind_dn = cn=postfix,ou=dsa,$postfix_ldap_basedn
 bind_pw = $postfix_ldap_password
-search_base = ou=people,$postfix_ldap_basedn
 scope = one
+search_base = ou=people,$postfix_ldap_basedn
 query_filter = (&(objectClass=gosaMailAccount)(!(gosaMailDeliveryMode=[*I*]))(gosaMailAlternateAddress=%s))
 result_attribute = mail
 EOF
 
-chown postfix:postfix /etc/postfix/ldap-*
+chown postfix /etc/postfix/ldap-*
 
 # set normal umask
 umask 0022
@@ -199,19 +196,22 @@ policy-spf unix  -       n       n       -       0       spawn
 EOF
 
 cat > /etc/postfix/main.cf <<EOF
-# NOTIFICATIONS
+# COMPATIBILITY
 
-biff = no
+compatibility_level = 2
 
 # INTERNET HOST AND DOMAIN NAMES
 
 myhostname = $postfix_fqdn
-myorigin = \$mydomain
 
 # RECEIVING MAIL
 
 mydestination =
-virtual_transport = $postfix_mailbox_transport
+
+alias_database =
+alias_maps =
+
+virtual_transport = lmtp:inet:dovecot:8025
 virtual_mailbox_domains = proxy:ldap:/etc/postfix/ldap-domains.cf
 virtual_mailbox_maps = proxy:ldap:/etc/postfix/ldap-accounts.cf
 virtual_alias_maps = proxy:ldap:/etc/postfix/ldap-alias-distributions.cf
@@ -223,13 +223,14 @@ virtual_alias_maps = proxy:ldap:/etc/postfix/ldap-alias-distributions.cf
 # TRUST AND RELAY CONTROL
 
 mynetworks = 127.0.0.0/8 $docker_network
-relay_domains = \$mydestination
+relay_domains =
 
 # TLS parameters
 
 tls_high_cipherlist = EECDH+AESGCM:EDH+AESGCM:EECDH+AES256:EDH+AES256
 tls_ssl_options = NO_COMPRESSION
 
+smtp_tls_block_early_mail_reply = yes
 smtp_tls_CAfile = $postfix_ssl_ca_cert_file
 smtp_tls_cert_file = $postfix_ssl_cert_file
 smtp_tls_key_file = $postfix_ssl_key_file
@@ -253,8 +254,8 @@ smtpd_tls_session_cache_timeout = 3600s
 smtpd_sasl_auth_enable = no
 smtpd_sasl_authenticated_header = no
 smtpd_sasl_type = dovecot
-smtpd_sasl_path = $postfix_sasl_path
 smtpd_sasl_local_domain = \$myhostname
+smtpd_sasl_path = inet:dovecot:8100
 smtpd_sasl_security_options = noanonymous
 
 # ADDRESS EXTENSIONS (e.g., user+foo)
@@ -267,7 +268,6 @@ recipient_delimiter = +
 smtpd_banner = \$myhostname ESMTP
 smtpd_helo_required = yes
 readme_directory = no
-in_flow_delay = 1s
 disable_vrfy_command = yes
 strict_rfc821_envelopes = yes
 message_size_limit = $postfix_message_size_limit
@@ -307,4 +307,8 @@ smtpd_recipient_restrictions =
 milter_default_action = accept
 #smtpd_milters = unix:opendkim/opendkim.sock unix:opendmarc/opendmarc.sock
 #non_smtpd_milters = unix:opendkim/opendkim.sock
+
+# NOTIFICATIONS
+
+biff = no
 EOF

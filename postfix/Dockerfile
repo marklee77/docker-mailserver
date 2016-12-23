@@ -18,7 +18,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
 RUN rm -rf /etc/dkimkeys/* /etc/opendkim.conf /etc/opendmarc.conf
-RUN find /etc/postfix -depth -mindepth 1 -not -name dynamicmaps.cf -exec rm -rf '{}' \;
+RUN /bin/bash -c "rm -f /etc/postfix/{main,master}.cf"
 
 COPY postfix-setup.sh /etc/my_init.d/00-postfix-setup
 COPY postfix-run.sh /etc/service/postfix/run
