@@ -200,9 +200,14 @@ cat > /etc/postfix/main.cf <<EOF
 
 compatibility_level = 2
 
+# NOTIFICATIONS
+
+biff = no
+
 # INTERNET HOST AND DOMAIN NAMES
 
 myhostname = $postfix_fqdn
+myorigin = \$mydomain
 
 # RECEIVING MAIL
 
@@ -265,18 +270,14 @@ recipient_delimiter = +
 
 # JUNK MAIL CONTROLS
 
+disable_vrfy_command = yes
+message_size_limit = $postfix_message_size_limit
 smtpd_banner = \$myhostname ESMTP
 smtpd_helo_required = yes
-readme_directory = no
-disable_vrfy_command = yes
 strict_rfc821_envelopes = yes
-message_size_limit = $postfix_message_size_limit
 
 postscreen_access_list = permit_mynetworks
 postscreen_greet_action = enforce
-postscreen_dnsbl_action = enforce
-postscreen_dnsbl_sites = ${postfix_rbl_list// /, }
-postscreen_dnsbl_threshold = 2
 
 policy-spf_time_limit = 3600s
 
@@ -293,21 +294,11 @@ smtpd_recipient_restrictions =
     reject_unknown_recipient_domain,
     reject_unlisted_recipient,
     reject_unauth_destination,
-    ${postfix_rbl_list:+$(
-        for rbl in $(eval "echo $postfix_rbl_list"); do
-            echo -ne "reject_rbl_client $rbl,\n    "
-        done)}${postfix_rhsbl_list:+$(
-        for rhsbl in $(eval "echo $postfix_rhsbl_list"); do
-            echo -ne "reject_rhsbl_client $rhsbl,\n    "
-        done)}check_policy_service unix:private/policy-spf,
+    check_policy_service unix:private/policy-spf,
 #    check_policy_service unix:sqlgrey/sqlgrey.sock,
     permit
 
 milter_default_action = accept
-#smtpd_milters = unix:opendkim/opendkim.sock unix:opendmarc/opendmarc.sock
+#smtpd_milters = unix:clamav/clamav.sock unix:opendkim/opendkim.sock unix:opendmarc/opendmarc.sock unix:/spamasassin/spamassassin.sock
 #non_smtpd_milters = unix:opendkim/opendkim.sock
-
-# NOTIFICATIONS
-
-biff = no
 EOF

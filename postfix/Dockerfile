@@ -17,7 +17,7 @@ RUN apt-get update && \
         sqlgrey && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
-RUN rm -rf /etc/dkimkeys/* /etc/opendkim.conf /etc/opendmarc.conf
+RUN rm -rf /etc/aliases* /etc/dkimkeys/* /etc/opendkim.conf /etc/opendmarc.conf
 RUN /bin/bash -c "rm -f /etc/postfix/{main,master}.cf"
 
 COPY postfix-setup.sh /etc/my_init.d/00-postfix-setup
