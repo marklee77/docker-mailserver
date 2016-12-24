@@ -117,19 +117,6 @@ plugin {
   mailbox_alias_old = Archive
   mailbox_alias_new = Sent
 
-  # antispam configuration
-  antispam_spam = Spam
-  antispam_trash = Trash
-  antispam_allow_append_to_spam = no
-
-  antispam_backend = pipe
-  antispam_pipe_tmpdir = /var/tmp
-  antispam_pipe_program = /usr/bin/spamc
-  antispam_pipe_program_args = -u;%u
-  antispam_pipe_program_spam_arg = -L;spam
-  antispam_pipe_program_notspam_arg = -L;ham
-  antispam_pipe_program_args = -d;amavis
-
   # fts configuration
   fts_autoindex = yes
   fts = solr
@@ -167,7 +154,7 @@ service lmtp {
 protocol imap {
   imap_client_workarounds = delay-newmail
   mail_max_userip_connections = 10
-  mail_plugins = antispam fts fts_solr
+  mail_plugins = fts fts_solr
 }
 
 service imap-login {
