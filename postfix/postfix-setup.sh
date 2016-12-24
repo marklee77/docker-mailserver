@@ -12,9 +12,8 @@
 : ${postfix_ldap_basedn:=dc=ldap,dc=dit}
 : ${postfix_ldap_password:=password}
 
-: ${postfix_rbl_list:=zen.spamhaus.org psbl.surriel.com dnsbl.sorbs.net}
-: ${postfix_rhsbl_list:=rhsbl.sorbs.net}
 : ${postfix_message_size_limit:=104857600}
+: ${postfix_external_milters:=}
 
 docker_network=$(ip a s eth0 | sed -n '/^\s*inet \([^ ]*\).*/{s//\1/p;q}')
 
@@ -219,10 +218,10 @@ alias_maps =
 virtual_transport = lmtp:inet:dovecot:8025
 virtual_mailbox_domains = proxy:ldap:/etc/postfix/ldap-domains.cf
 virtual_mailbox_maps = proxy:ldap:/etc/postfix/ldap-accounts.cf
-virtual_alias_maps = proxy:ldap:/etc/postfix/ldap-alias-distributions.cf
-                     proxy:ldap:/etc/postfix/ldap-alias-redirections.cf
-                     proxy:ldap:/etc/postfix/ldap-forward.cf
-                     proxy:ldap:/etc/postfix/ldap-forward-only.cf
+virtual_alias_maps = proxy:ldap:/etc/postfix/ldap-alias-distributions.cf,
+                     proxy:ldap:/etc/postfix/ldap-alias-redirections.cf,
+                     proxy:ldap:/etc/postfix/ldap-forward.cf,
+                     proxy:ldap:/etc/postfix/ldap-forward-only.cf,
                      proxy:ldap:/etc/postfix/ldap-alternates.cf
 
 # TRUST AND RELAY CONTROL
@@ -295,10 +294,12 @@ smtpd_recipient_restrictions =
     reject_unlisted_recipient,
     reject_unauth_destination,
     check_policy_service unix:private/policy-spf,
-#    check_policy_service unix:sqlgrey/sqlgrey.sock,
+    check_policy_service unix:sqlgrey/sqlgrey.sock,
     permit
 
 milter_default_action = accept
-#smtpd_milters = unix:clamav/clamav.sock unix:opendkim/opendkim.sock unix:opendmarc/opendmarc.sock unix:/spamasassin/spamassassin.sock
-#non_smtpd_milters = unix:opendkim/opendkim.sock
+smtpd_milters = unix:opendkim/opendkim.sock,
+                unix:opendmarc/opendmarc.sock,
+                $postfix_external_milters
+non_smtpd_milters = unix:opendkim/opendkim.sock
 EOF

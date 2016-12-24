@@ -15,6 +15,7 @@ services:
     environment:
       postfix_ldap_password: password
       postfix_ldap_tls_ca_cert_file: /etc/ssl/postfix/slapd-ca.crt
+      postfix_sqlgrey_db_password: password
 
   dovecot:
     build: dovecot
@@ -57,5 +58,8 @@ services:
 
   db:
     image: postgres
+    volumes:
+      - ./test/sql:/docker-entrypoint-initdb.d
     environment:
       POSTGRES_PASSWORD: password
+      postfix_sqlgrey_db_password: password
