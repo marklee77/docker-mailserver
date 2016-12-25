@@ -17,7 +17,7 @@ RUN apt-get update && \
         sqlgrey && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
-RUN rm -rf /etc/aliases* /etc/dkimkeys/* /etc/opendkim.conf /etc/opendmarc.conf
+RUN rm -rf /etc/aliases* /etc/dkimkeys/* /etc/opendmarc.conf
 RUN cd /etc/postfix && rm -f main.cf master.cf
 RUN usermod -aG opendkim,opendmarc,sqlgrey postfix
 RUN cd /var/spool/postfix && \
@@ -33,6 +33,9 @@ COPY postfix-run.sh /etc/service/postfix/run
 COPY sqlgrey-setup.sh /etc/my_init.d/10-sqlgrey-setup
 COPY sqlgrey-run.sh /etc/service/sqlgrey/run
 
-VOLUME [ "/etc/dkimkeys", "/etc/postfix", "/etc/ssl/postfix", "/var/lib/postfix" ]
+COPY opendkim-setup.sh /etc/my_init.d/10-opendkim-setup
+COPY opendkim-run.sh /etc/service/opendkim/run
+
+VOLUME [ "/etc/opendkim", "/etc/postfix", "/etc/ssl/postfix", "/var/lib/postfix" ]
 
 EXPOSE 25 587
