@@ -25,6 +25,14 @@ db_pass = $postfix_sqlgrey_db_password
 EOF
 chown sqlgrey:sqlgrey /etc/sqlgrey/sqlgrey.conf
 
+cat > /etc/sqlgrey/psql-env.sh <<EOF
+export PGHOST="$postfix_sqlgrey_db_host"
+export PGPORT="$postfix_sqlgrey_db_port"
+export PGNAME="$postfix_sqlgrey_db_password"
+export PGUSER="$postfix_sqlgrey_db_user"
+export PGPASSWORD="$postfix_sqlgrey_db_password"
+EOF
+
 umask 0022
 
 touch /etc/sqlgrey/clients_ip_whitelist.local
