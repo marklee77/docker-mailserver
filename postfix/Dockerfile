@@ -28,7 +28,7 @@ RUN cd /var/spool/postfix && \
     chown opendmarc:opendmarc opendmarc && \
     chown sqlgrey:sqlgrey sqlgrey
 
-COPY setup.sh /etc/my_init.d/00-setup
+COPY setup.sh /etc/my_init.d/10-setup
 
 COPY postfix.sh /etc/service/postfix/run
 COPY sqlgrey.sh /etc/service/sqlgrey/run

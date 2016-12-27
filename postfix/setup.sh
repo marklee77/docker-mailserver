@@ -172,7 +172,9 @@ export PGUSER="$postfix_sqlgrey_db_user"
 export PGPASSWORD="$postfix_sqlgrey_db_password"
 EOF
 
-opendkim-genkey -r -b 2048 -h sha256 -s mail -D /etc/dkimkeys -d $postfix_fqdn
+dkim_selector="${postfix_fqdn%%.*}$(date +%Y%m%d)"
+
+opendkim-genkey -r -b 2048 -h sha256 -s $dkim_selector -D /etc/dkimkeys -d $postfix_fqdn
 
 cat > /etc/opendkim.conf <<EOF
 LDAPBindUser     cn=postfix,ou=dsa,$postfix_ldap_basedn
@@ -180,9 +182,9 @@ LDAPBindPassword $postfix_ldap_password
 LDAPUseTLS       $([ "$postfix_ldap_tls" = "yes" ] && echo True || echo False)
 Canonicalization relaxed/relaxed
 InternalHosts    127.0.0.0/8, $docker_network
-Selector         mail
+Selector         $dkim_selector
 Domain           $postfix_ldap_url/$postfix_ldap_basedn?ou?one?(&(objectClass=domain)(ou=\$d))
-KeyFile          /etc/dkimkeys/mail.private
+KeyFile          /etc/dkimkeys/${dkim_selector}.private
 PidFile          /var/run/opendkim/opendkim.pid
 UserID           opendkim:opendkim
 UMask            0117
