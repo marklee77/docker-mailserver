@@ -1,20 +1,12 @@
-- manage mailserver domains, dkim keys in ldap...
-- need to think a bit more about how dns setup is going to work...
-- need to clean up variables, string quote?
 - https://github.com/instrumentisto/docker-mailserver
-- some kind of mailing list...sympa? does that need to integrate? look up
-- http://postfix.state-of-mind.de/patrick.koetter/opendkim/README.LDAP.html
 - https://rmohan.com/?p=6173
-
-- maybe need to integrate bind for DANE?!
-- http://blog.dovecot.org/2012/02/dovecot-clustering-with-dsync-based.html
-- http://wiki.dovecot.org/Replication
-- look at sogo or owncloud for webmail, addressbook, calender
-
-- certs from letsencrypt
-
 - look at mailinabox and mailcow and https://www.own-mailbox.com/
 
+- replication
+  - http://blog.dovecot.org/2012/02/dovecot-clustering-with-dsync-based.html
+  - http://wiki.dovecot.org/Replication
+- sympa mailing list support
+- certs from letsencrypt
 - dkim key rotation and generation hostname/date in selector
 - clamav
     - make sure compressed files are being scanned
