@@ -6,6 +6,7 @@ RUN /bin/bash -c "rm -f /etc/cron.{daily,weekly}/{apt-compat,bsdmainutils,man-db
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update && \
     apt-get -y install \
+        ldap-utils \
         opendkim \
         opendkim-tools \
         opendmarc \
@@ -27,15 +28,13 @@ RUN cd /var/spool/postfix && \
     chown opendmarc:opendmarc opendmarc && \
     chown sqlgrey:sqlgrey sqlgrey
 
-COPY postfix-setup.sh /etc/my_init.d/00-postfix-setup
-COPY postfix-run.sh /etc/service/postfix/run
+COPY setup.sh /etc/my_init.d/00-setup
 
-COPY sqlgrey-setup.sh /etc/my_init.d/10-sqlgrey-setup
-COPY sqlgrey-run.sh /etc/service/sqlgrey/run
+COPY postfix.sh /etc/service/postfix/run
+COPY sqlgrey.sh /etc/service/sqlgrey/run
+COPY opendkim.sh /etc/service/opendkim/run
+COPY opendmarc.sh /etc/service/opendmarc/run
 
-COPY opendkim-setup.sh /etc/my_init.d/10-opendkim-setup
-COPY opendkim-run.sh /etc/service/opendkim/run
-
-VOLUME [ "/etc/opendkim", "/etc/postfix", "/etc/ssl/postfix", "/var/lib/postfix" ]
+VOLUME [ "/etc/dkimkeys" ]
 
 EXPOSE 25 587

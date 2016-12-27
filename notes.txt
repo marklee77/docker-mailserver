@@ -1,25 +1,27 @@
-- swaks for smtp testing
-- perfect: http://www.theo-andreou.org/?p=1568
-- what really needs to be in postfix master?
+- manage mailserver domains, dkim keys in ldap...
+- need to think a bit more about how dns setup is going to work...
+- need to clean up variables, string quote?
+- https://github.com/instrumentisto/docker-mailserver
+- some kind of mailing list...sympa? does that need to integrate? look up
+- http://postfix.state-of-mind.de/patrick.koetter/opendkim/README.LDAP.html
+- https://rmohan.com/?p=6173
 
 - maybe need to integrate bind for DANE?!
-- http://blog.gnukai.com/2011/07/postfixdovecot-with-ldap/
-- https://help.ubuntu.com/community/PostfixCompleteVirtualMailSystemHowto
 - http://blog.dovecot.org/2012/02/dovecot-clustering-with-dsync-based.html
-- http://wiki.dovecot.org/Replication -- ha cluster
-- https://www.howtoforge.com/postfix-virtual-hosting-with-ldap-backend-and-dovecot-imap-pop3-on-ubuntu-trusty-tahr-14.04-p3
-- https://www.own-mailbox.com/
+- http://wiki.dovecot.org/Replication
 - look at sogo or owncloud for webmail, addressbook, calender
 
-- look at mailinabox and mailcow
+- certs from letsencrypt
 
-- might need to allow appends to spam folder? -- maybe autolearn isn't best
-  policy anyway? -- look more at spamassassin
-- amavis
-  - clamav (own image)
-  - spamassassin (own image)
-- dkim/dmarc
-- filtering with sieve
-- consider moving all from phusion/baseimage to marklee77/supervisor
-- imap/postfix need certs from letsencrypt
-- check on address extension: http://wiki.dovecot.org/LMTP
+- look at mailinabox and mailcow and https://www.own-mailbox.com/
+
+- dkim key rotation and generation hostname/date in selector
+- clamav
+    - make sure compressed files are being scanned
+- spamassassin
+    - user config vars from ldap
+    - need caching name server
+    - dcc, razor, pyzor (remember pyzor discover)
+    - bayes?
+    - monitoring
+    - sa-update cron job

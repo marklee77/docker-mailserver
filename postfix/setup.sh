@@ -15,6 +15,12 @@
 : ${postfix_message_size_limit:=104857600}
 : ${postfix_external_milters:=}
 
+: ${postfix_sqlgrey_db_host:=db}
+: ${postfix_sqlgrey_db_port:=5432}
+: ${postfix_sqlgrey_db_name:=sqlgrey}
+: ${postfix_sqlgrey_db_user:=sqlgrey}
+: ${postfix_sqlgrey_db_password:=password}
+
 docker_network=$(ip a s eth0 | sed -n '/^\s*inet \([^ ]*\).*/{s//\1/p;q}')
 
 # set secure umask
@@ -24,9 +30,12 @@ if ! [ -f "$postfix_ssl_cert_file" ]; then
     openssl req -newkey rsa:2048 -x509 -nodes -days 365 \
         -subj "/CN=$(hostname)" \
         -out $postfix_ssl_cert_file -keyout $postfix_ssl_key_file
+    chmod 0644 $postfix_ssl_cert_file
 fi
 
 [ -f "/etc/postfix/master.cf" ] && exit 0
+
+echo -n "$postfix_ldap_password" > /etc/ldap/ldap.passwd
 
 cat > /etc/postfix/ldap-domains.cf <<EOF
 server_host = $postfix_ldap_url
@@ -139,10 +148,60 @@ EOF
 
 chown postfix /etc/postfix/ldap-*
 
+cat > /etc/sqlgrey/sqlgrey.conf <<EOF
+user = sqlgrey
+group = sqlgrey
+unix = /var/spool/postfix/sqlgrey/sqlgrey.sock
+connect_src_throttle = 5
+awl_age = 32
+group_domain_level = 2
+db_type = Pg
+db_host = $postfix_sqlgrey_db_host
+db_port = $postfix_sqlgrey_db_port
+db_name = $postfix_sqlgrey_db_name
+db_user = $postfix_sqlgrey_db_user
+db_pass = $postfix_sqlgrey_db_password
+EOF
+chown sqlgrey:sqlgrey /etc/sqlgrey/sqlgrey.conf
+
+cat > /etc/sqlgrey/psql-env.sh <<EOF
+export PGHOST="$postfix_sqlgrey_db_host"
+export PGPORT="$postfix_sqlgrey_db_port"
+export PGNAME="$postfix_sqlgrey_db_password"
+export PGUSER="$postfix_sqlgrey_db_user"
+export PGPASSWORD="$postfix_sqlgrey_db_password"
+EOF
+
+opendkim-genkey -r -b 2048 -h sha256 -s mail -D /etc/dkimkeys -d $postfix_fqdn
+
+cat > /etc/opendkim.conf <<EOF
+LDAPBindUser     cn=postfix,ou=dsa,$postfix_ldap_basedn
+LDAPBindPassword $postfix_ldap_password
+LDAPUseTLS       $([ "$postfix_ldap_tls" = "yes" ] && echo True || echo False)
+Canonicalization relaxed/relaxed
+InternalHosts    127.0.0.0/8, $docker_network
+Selector         mail
+Domain           $postfix_ldap_url/$postfix_ldap_basedn?ou?one?(&(objectClass=domain)(ou=\$d))
+KeyFile          /etc/dkimkeys/mail.private
+PidFile          /var/run/opendkim/opendkim.pid
+UserID           opendkim:opendkim
+UMask            0117
+Socket           local:/var/spool/postfix/opendkim/opendkim.sock
+Syslog           yes
+SyslogSuccess    yes
+EOF
+
 # set normal umask
 umask 0022
 
 echo $postfix_fqdn > /etc/mailname
+
+cat > /etc/ldap/ldap.conf <<EOF
+URI $postfix_ldap_url
+BINDDN cn=postfix,ou=dsa,$postfix_ldap_basedn
+BASE $postfix_ldap_basedn
+TLS_CACERT $postfix_ldap_tls_ca_cert_file
+EOF
 
 cat > /etc/postfix/master.cf <<EOF
 # ==========================================================================
@@ -302,4 +361,15 @@ smtpd_milters = unix:opendkim/opendkim.sock,
                 unix:opendmarc/opendmarc.sock,
                 $postfix_external_milters
 non_smtpd_milters = unix:opendkim/opendkim.sock
+EOF
+
+touch /etc/sqlgrey/clients_ip_whitelist.local
+touch /etc/sqlgrey/clients_fqdn_whitelist.local
+
+cat > /etc/opendmarc.conf <<EOF
+PidFile          /var/run/opendmarc/opendmarc.pid
+UserID           opendmarc:opendmarc
+UMask            0117
+Socket           local:/var/spool/postfix/opendmarc/opendmarc.sock
+Syslog           yes
 EOF

@@ -1,5 +1,4 @@
 #!/bin/bash
-
 source /etc/sqlgrey/psql-env.sh
 
 # do not start sqlgrey before database is available
