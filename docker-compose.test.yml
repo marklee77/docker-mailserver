@@ -8,6 +8,7 @@ services:
       - dovecot
       - ldap
       - db
+      - clamav
     links:
       - dovecot
     volumes:
@@ -63,3 +64,8 @@ services:
     environment:
       POSTGRES_PASSWORD: password
       postfix_sqlgrey_db_password: password
+
+  clamav:
+    image: clamav
+    volumes:
+      - ./test/clamav:/var/lib/clamav
