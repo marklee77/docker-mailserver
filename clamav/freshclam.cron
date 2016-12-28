@@ -1,2 +1,0 @@
-#!/bin/bash
-/usr/bin/freshclam >/dev/null 2>&1

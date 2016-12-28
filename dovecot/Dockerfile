@@ -6,17 +6,14 @@ RUN /bin/bash -c "rm -f /etc/cron.{daily,weekly}/{apt-compat,bsdmainutils,man-db
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update && \
     apt-get -y install --no-install-recommends \
-        dovecot-antispam \
         dovecot-core \
         dovecot-imapd \
         dovecot-ldap \
         dovecot-lmtpd \
         dovecot-managesieved \
-        dovecot-mysql \
         dovecot-pop3d \
         dovecot-sieve \
-        dovecot-solr \
-        spamc && \
+        dovecot-solr && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
 COPY default.sieve /var/lib/dovecot/default.sieve

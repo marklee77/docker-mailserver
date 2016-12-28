@@ -19,9 +19,7 @@ RUN chown clamav:clamav /etc/clamav/*.conf && chmod 0644 /etc/clamav/*.conf
 COPY setup.sh /etc/my_init.d/10-setup
 
 COPY clamd.sh /etc/service/clamd/run
+COPY freshclam.sh /etc/service/freshclam/run
 COPY clamav-milter.sh /etc/service/clamav-milter/run
-
-COPY freshclam.cron /etc/cron.hourly/freshclam
-RUN chmod 0755 /etc/cron.hourly/freshclam
 
 VOLUME [ "/var/lib/clamav" ]

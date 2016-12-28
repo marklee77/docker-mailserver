@@ -66,6 +66,6 @@ services:
       postfix_sqlgrey_db_password: password
 
   clamav:
-    image: clamav
+    build: clamav
     volumes:
       - ./test/clamav:/var/lib/clamav
