@@ -7,6 +7,8 @@ ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update && \
     apt-get -y install --no-install-recommends \
         fuzzyocr \
+        imagemagick \
+        libgeo-ip-perl \
         pyzor \
         razor \
         sa-compile \
@@ -15,6 +17,10 @@ RUN apt-get update && \
         spamassassin-heatu \
         spamassassin-rules-ja && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/*
+
+RUN echo "CRON=1" > /etc/default/spamassassin
+
+ADD setup.sh /etc/my_init.d/10-setup
 
 ADD spamd.sh /etc/service/spamd/run
 ADD spamass-milter.sh /etc/service/spamass-milter/run

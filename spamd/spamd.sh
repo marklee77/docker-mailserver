@@ -1,2 +1,2 @@
 #!/bin/bash
-exec /usr/sbin/spamd -u debian-spamd -g debian-spamd --ldap-config -x
+exec /usr/sbin/spamd -s mail -u debian-spamd -g debian-spamd --ldap-config -x
