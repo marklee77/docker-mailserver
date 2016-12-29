@@ -1,38 +1,22 @@
 FROM phusion/baseimage:latest
 MAINTAINER Mark Stillwell <mark@stillwell.me>
 
+RUN /bin/bash -c "rm -f /etc/cron.{daily,weekly}/{apt-compat,bsdmainutils,man-db,passwd}"
+
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update && \
-    apt-get -y install \
-        amavisd-new \
-        arj \
-        bzip2 \
-        cabextract \
-        clamav-daemon \
-        clamav-freshclam \
-        cpio \
-        file \
+    apt-get -y install --no-install-recommends \
         fuzzyocr \
-        gzip \
-        lhasa \
-        nomarch \
-        pax \
         pyzor \
         razor \
         sa-compile \
+        spamass-milter \
         spamassassin \
         spamassassin-heatu \
-        unrar-free \
-        unzip \
-        zip \
-        zoo && \
+        spamassassin-rules-ja && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
-#ADD postfix.sh /etc/service/postfix/run
+ADD spamd.sh /etc/service/spamd/run
+ADD spamass-milter.sh /etc/service/spamass-milter/run
 
-# data volumes
-#VOLUME [ "/etc/dkimkeys", "/etc/postfix", "/etc/ssl", "/usr/local/share/ca-certificates", \
-#         "/var/lib/postfix", "/var/log" ]
-
-# interface ports
-#EXPOSE 25 587
+EXPOSE 783 1234
