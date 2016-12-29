@@ -9,6 +9,7 @@ services:
       - ldap
       - db
       - clamav
+      - spamd
     links:
       - dovecot
     volumes:
@@ -70,3 +71,6 @@ services:
     build: clamav
     volumes:
       - ./test/clamav:/var/lib/clamav
+
+  spamd:
+    build: spamd
