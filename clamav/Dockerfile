@@ -23,3 +23,5 @@ COPY freshclam.sh /etc/service/freshclam/run
 COPY clamav-milter.sh /etc/service/clamav-milter/run
 
 VOLUME [ "/var/lib/clamav" ]
+
+EXPOSE 1234

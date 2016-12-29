@@ -9,8 +9,6 @@
 - sympa mailing list support
 - certs from letsencrypt
 - dkim key rotation and generation hostname/date in selector
-- clamav
-    - make sure compressed files are being scanned
 - spamassassin
     - user config vars from ldap
     - need caching name server
@@ -18,3 +16,4 @@
     - bayes?
     - monitoring
     - sa-update cron job
+- syslog
