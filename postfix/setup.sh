@@ -46,10 +46,10 @@ tls_require_cert = $postfix_ldap_tls_require_cert
 bind = yes
 bind_dn = cn=postfix,ou=dsa,$postfix_ldap_basedn
 bind_pw = $postfix_ldap_password
+search_base = ou=servers,ou=systems,$postfix_ldap_basedn
 scope = one
-search_base = $postfix_ldap_basedn
-query_filter = (&(objectClass=domain)(dc=%s))
-result_attribute = dc
+query_filter = (&(objectClass=fdPostfixServer)(cn=$postfix_fqdn)(postfixMyDestinations=%s))
+result_attribute = cn
 EOF
 
 cat > /etc/postfix/ldap-accounts.cf <<EOF
@@ -61,8 +61,8 @@ tls_require_cert = $postfix_ldap_tls_require_cert
 bind = yes
 bind_dn = cn=postfix,ou=dsa,$postfix_ldap_basedn
 bind_pw = $postfix_ldap_password
-scope = one
 search_base = ou=people,$postfix_ldap_basedn
+scope = one
 query_filter = (&(objectClass=gosaMailAccount)(!(gosaMailDeliveryMode=[*I*]))(mail=%s))
 result_attribute = mail
 EOF
@@ -76,8 +76,8 @@ tls_require_cert = $postfix_ldap_tls_require_cert
 bind = yes
 bind_dn = cn=postfix,ou=dsa,$postfix_ldap_basedn
 bind_pw = $postfix_ldap_password
-scope = one
 search_base = ou=alias,$postfix_ldap_basedn
+scope = one
 # postfix does not supply a time string and slapd doesn't support NOW,
 # so ignore aliasExpirationdate for the moment.
 query_filter = (&(objectClass=mailAliasDistribution)(gosaMailAlternateAddress=%s))
@@ -93,8 +93,8 @@ tls_require_cert = $postfix_ldap_tls_require_cert
 bind = yes
 bind_dn = cn=postfix,ou=dsa,$postfix_ldap_basedn
 bind_pw = $postfix_ldap_password
-scope = one
 search_base = ou=alias,$postfix_ldap_basedn
+scope = one
 # postfix does not supply a time string and slapd doesn't support NOW,
 # so ignore aliasExpirationdate for the moment.
 query_filter = (&(objectClass=mailAliasRedirection)(mail=%s))
@@ -110,8 +110,8 @@ tls_require_cert = $postfix_ldap_tls_require_cert
 bind = yes
 bind_dn = cn=postfix,ou=dsa,$postfix_ldap_basedn
 bind_pw = $postfix_ldap_password
-scope = one
 search_base = ou=people,$postfix_ldap_basedn
+scope = one
 query_filter = (&(objectClass=gosaMailAccount)(!(gosaMailDeliveryMode=[*I*]))(|(mail=%s)(gosaMailAlternateAddress=%s)))
 result_attribute = mail,gosaMailForwardingAddress
 EOF
@@ -125,8 +125,8 @@ tls_require_cert = $postfix_ldap_tls_require_cert
 bind = yes
 bind_dn = cn=postfix,ou=dsa,$postfix_ldap_basedn
 bind_pw = $postfix_ldap_password
-scope = one
 search_base = ou=people,$postfix_ldap_basedn
+scope = one
 query_filter = (&(objectClass=gosaMailAccount)(gosaMailDeliveryMode=[*I*])(|(mail=%s)(gosaMailAlternateAddress=%s)))
 result_attribute = gosaMailForwardingAddress
 EOF
@@ -140,8 +140,8 @@ tls_require_cert = $postfix_ldap_tls_require_cert
 bind = yes
 bind_dn = cn=postfix,ou=dsa,$postfix_ldap_basedn
 bind_pw = $postfix_ldap_password
-scope = one
 search_base = ou=people,$postfix_ldap_basedn
+scope = one
 query_filter = (&(objectClass=gosaMailAccount)(!(gosaMailDeliveryMode=[*I*]))(gosaMailAlternateAddress=%s))
 result_attribute = mail
 EOF
@@ -172,7 +172,7 @@ export PGUSER="$postfix_sqlgrey_db_user"
 export PGPASSWORD="$postfix_sqlgrey_db_password"
 EOF
 
-dkim_selector="${postfix_fqdn%%.*}$(date +%Y%m%d)"
+dkim_selector="${postfix_fqdn%%.*}-$(date +%Y%m%d)"
 
 opendkim-genkey -r -b 2048 -h sha256 -s $dkim_selector -D /etc/dkimkeys -d $postfix_fqdn
 
@@ -183,7 +183,7 @@ LDAPUseTLS       $([ "$postfix_ldap_tls" = "yes" ] && echo True || echo False)
 Canonicalization relaxed/relaxed
 InternalHosts    127.0.0.0/8, $docker_network
 Selector         $dkim_selector
-Domain           $postfix_ldap_url/$postfix_ldap_basedn?ou?one?(&(objectClass=domain)(ou=\$d))
+Domain           $postfix_ldap_url/ou=servers,ou=systems,$postfix_ldap_basedn?postfixMyDestinations?one?(&(objectClass=fdPostfixServer)(cn=$postfix_fqdn)(postfixMyDestinations=\$d))
 KeyFile          /etc/dkimkeys/${dkim_selector}.private
 PidFile          /var/run/opendkim/opendkim.pid
 UserID           opendkim:opendkim

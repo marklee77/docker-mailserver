@@ -14,6 +14,7 @@ services:
     volumes:
       - ./test/ssl:/etc/ssl/postfix
     environment:
+      postfix_fqdn: mail.test.com
       postfix_ldap_password: password
       postfix_ldap_tls_ca_cert_file: /etc/ssl/postfix/slapd-ca.crt
       postfix_sqlgrey_db_password: password
