@@ -8,7 +8,6 @@ RUN apt-get update && \
     apt-get -y install --no-install-recommends \
         fuzzyocr \
         imagemagick \
-        libgeo-ip-perl \
         pyzor \
         razor \
         sa-compile \
@@ -17,6 +16,8 @@ RUN apt-get update && \
         spamassassin-heatu \
         spamassassin-rules-ja && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/*
+
+RUN rm -f /etc/spamassassin/local.cf
 
 RUN echo "CRON=1" > /etc/default/spamassassin
 

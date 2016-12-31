@@ -1,3 +1,4 @@
+- spamassassin user config vars from ldap
 - need to tinker a bit with docker volume drivers...
 - https://github.com/instrumentisto/docker-mailserver
 - https://rmohan.com/?p=6173
@@ -9,12 +10,5 @@
 - sympa mailing list support
 - certs from letsencrypt
 - dkim key rotation and generation hostname/date in selector
-- spamassassin
-    - user config vars from ldap
-    - need caching name server
-    - dcc, razor, pyzor (remember pyzor discover)
-    - bayes?
-    - monitoring
-    - sa-update cron job
 - syslog
 - revisit setup...ansible?
