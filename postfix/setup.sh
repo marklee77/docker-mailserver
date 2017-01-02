@@ -13,7 +13,7 @@
 : ${postfix_ldap_password:=password}
 
 : ${postfix_message_size_limit:=104857600}
-: ${postfix_external_milters:=}
+: ${postfix_external_milters:=inet:clamav:1234, inet:spamd:1234}
 
 : ${postfix_sqlgrey_db_host:=db}
 : ${postfix_sqlgrey_db_port:=5432}

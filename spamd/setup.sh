@@ -9,9 +9,6 @@ cd /var/lib/spamassassin
 [ -f .razor/identity ] || setuser debian-spamd razor-admin -register
 [ -d sa-update-keys ] || setuser debian-spamd sa-update --gpghomedir ./sa-update-keys
 
-# set normal umask
-umask 0022
-
 [ -f /etc/spamassassin/local.cf ] || cat > /etc/spamassassin/local.cf <<EOF
 # report_safe 1
 # trusted_networks 212.17.35.
@@ -26,3 +23,4 @@ bayes_ignore_header X-Spam-Status
 
 normalize_charset 1
 EOF
+chown debian-spamd:debian-spamd /etc/spamassassin/local.cf

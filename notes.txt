@@ -1,4 +1,3 @@
-- spamassassin user config vars from ldap
 - need to tinker a bit with docker volume drivers...
 - https://github.com/instrumentisto/docker-mailserver
 - https://rmohan.com/?p=6173
@@ -7,8 +6,6 @@
 - replication
   - http://blog.dovecot.org/2012/02/dovecot-clustering-with-dsync-based.html
   - http://wiki.dovecot.org/Replication
-- sympa mailing list support
 - certs from letsencrypt
 - dkim key rotation and generation hostname/date in selector
-- syslog
-- revisit setup...ansible?
+- caching dns support for spamd...build into that container?
