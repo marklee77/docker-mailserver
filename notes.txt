@@ -3,9 +3,10 @@
 - https://rmohan.com/?p=6173
 - look at mailinabox and mailcow and https://www.own-mailbox.com/
 
+- need a webmail solution with sieve support and calendar
+- certs from letsencrypt
 - replication
   - http://blog.dovecot.org/2012/02/dovecot-clustering-with-dsync-based.html
   - http://wiki.dovecot.org/Replication
-- certs from letsencrypt
 - dkim key rotation and generation hostname/date in selector
 - caching dns support for spamd...build into that container?
