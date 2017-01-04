@@ -1,3 +1,5 @@
+- save sent mail in Archive
+- not subscribe/index sent/archive?
 - need to tinker a bit with docker volume drivers...
 - https://github.com/instrumentisto/docker-mailserver
 - https://rmohan.com/?p=6173

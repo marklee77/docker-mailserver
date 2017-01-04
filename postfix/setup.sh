@@ -363,6 +363,8 @@ smtpd_milters = unix:opendkim/opendkim.sock,
                 unix:opendmarc/opendmarc.sock,
                 $postfix_external_milters
 non_smtpd_milters = unix:opendkim/opendkim.sock
+
+milter_connect_macros = i j {daemon_name} v {if_name} _
 EOF
 
 touch /etc/sqlgrey/clients_ip_whitelist.local
