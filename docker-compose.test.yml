@@ -50,7 +50,7 @@ services:
     image: marklee77/fusiondirectory
     hostname: ldap
     volumes:
-      - ./test/ssl:/etc/ssl/slapd
+      - ./test/ssl:/etc/ssl/container
       - ./test/ldap/dbinit.d:/etc/ldap/dbinit.d/10-mailserver-test
     ports:
       - "127.0.0.1:80:80"
