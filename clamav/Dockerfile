@@ -1,4 +1,4 @@
-FROM phusion/baseimage:latest
+FROM marklee77/supervisor:xenial
 MAINTAINER Mark Stillwell <mark@stillwell.me>
 
 RUN /bin/bash -c "rm -f /etc/cron.{daily,weekly}/{apt-compat,bsdmainutils,man-db,passwd}"
@@ -11,16 +11,14 @@ RUN apt-get update && \
         clamav-milter && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
-COPY clamd.conf /etc/clamav/clamd.conf
-COPY clamav-milter.conf /etc/clamav/clamav-milter.conf
-COPY freshclam.conf /etc/clamav/freshclam.conf
+COPY root/etc/clamav/*.conf /etc/clamav/
 RUN chown clamav:clamav /etc/clamav/*.conf && chmod 0644 /etc/clamav/*.conf
 
-COPY setup.sh /etc/my_init.d/10-setup
+COPY root/etc/my_init.d/10-clamav-setup /etc/my_init.d/
+RUN chmod 755 /etc/my_init.d/10-clamav-setup
 
-COPY clamd.sh /etc/service/clamd/run
-COPY freshclam.sh /etc/service/freshclam/run
-COPY clamav-milter.sh /etc/service/clamav-milter/run
+COPY root/etc/supervisor/conf.d/clamav.conf /etc/supervisor/conf.d/
+RUN chmod 644 /etc/supervisor/conf.d/clamav.conf
 
 VOLUME [ "/var/lib/clamav" ]
 
