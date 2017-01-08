@@ -1,4 +1,4 @@
-FROM phusion/baseimage:latest
+FROM marklee77/supervisor:xenial
 MAINTAINER Mark Stillwell <mark@stillwell.me>
 
 RUN /bin/bash -c "rm -f /etc/cron.{daily,weekly}/{apt-compat,bsdmainutils,man-db,passwd}"
@@ -28,12 +28,14 @@ RUN cd /var/spool/postfix && \
     chown opendmarc:opendmarc opendmarc && \
     chown sqlgrey:sqlgrey sqlgrey
 
-COPY setup.sh /etc/my_init.d/10-setup
+COPY root/usr/local/sbin/* /usr/local/sbin/
+RUN chmod 755 /usr/local/sbin/*
 
-COPY postfix.sh /etc/service/postfix/run
-COPY sqlgrey.sh /etc/service/sqlgrey/run
-COPY opendkim.sh /etc/service/opendkim/run
-COPY opendmarc.sh /etc/service/opendmarc/run
+COPY root/etc/my_init.d/10-postfix-setup /etc/my_init.d/
+RUN chmod 755 /etc/my_init.d/10-postfix-setup
+
+COPY root/etc/supervisor/conf.d/postfix.conf /etc/supervisor/conf.d/
+RUN chmod 644 /etc/supervisor/conf.d/postfix.conf
 
 VOLUME [ "/etc/dkimkeys" ]
 

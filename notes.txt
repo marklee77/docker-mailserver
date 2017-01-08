@@ -12,3 +12,5 @@
   - http://wiki.dovecot.org/Replication
 - dkim key rotation and generation hostname/date in selector
 - caching dns support for spamd...build into that container?
+
+- https://github.com/docker/labs/tree/master/Docker-Orchestration
