@@ -1,8 +1,6 @@
 FROM marklee77/supervisor:xenial
 MAINTAINER Mark Stillwell <mark@stillwell.me>
 
-RUN /bin/bash -c "rm -f /etc/cron.{daily,weekly}/{apt-compat,bsdmainutils,man-db,passwd}"
-
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update && \
     apt-get -y install --no-install-recommends \
