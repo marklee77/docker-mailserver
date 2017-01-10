@@ -1,16 +1,29 @@
-- save sent mail in Archive
+- letsencrypt on host
+- bind9 container
+- orchestration / replication
+- dovecot replication: http://blog.le-vert.net/?p=160
+
+- need to do docs
+- switch to alpine?
+
+- docker-compose.test.yml should extend docker-compose.yml but work for test
+- save sent mail in Archive?
 - not subscribe/index sent/archive?
-- need to tinker a bit with docker volume drivers...
-- https://github.com/instrumentisto/docker-mailserver
-- https://rmohan.com/?p=6173
-- look at mailinabox and mailcow and https://www.own-mailbox.com/
+- compare against these, what's better, what's worse:
+    - https://github.com/instrumentisto/docker-mailserver
+    - https://rmohan.com/?p=6173
+    - https://github.com/tomav/docker-mailserver
+    - look at mailinabox and mailcow and https://www.own-mailbox.com/
 
 - need a webmail solution with sieve support and calendar
 - certs from letsencrypt
 - replication
   - http://blog.dovecot.org/2012/02/dovecot-clustering-with-dsync-based.html
   - http://wiki.dovecot.org/Replication
+  - http://info.crunchydata.com/blog/easy-postgresql-cluster-recipe-using-docker-1.12
 - dkim key rotation and generation hostname/date in selector
-- caching dns support for spamd...build into that container?
 
 - https://github.com/docker/labs/tree/master/Docker-Orchestration
+
+- user configurable encryption for mail at rest, with time limitations for
+  search (e.g., keep mail forever, but only searchable online for 3 months)
