@@ -1,11 +1,17 @@
+- okay, next thing: get mailserver running on local swarm
+
 - letsencrypt on host
 - bind9 container
 - orchestration / replication
 - dovecot replication: http://blog.le-vert.net/?p=160
+- dovecot config can be simplified with includes
+- dovecot can discover peers via dig, needs to update config/autorestart
+  automatically
 
 - need to do docs
 - switch to alpine?
 
+- find out more about how stacks work
 - docker-compose.test.yml should extend docker-compose.yml but work for test
 - save sent mail in Archive?
 - not subscribe/index sent/archive?
@@ -15,12 +21,14 @@
     - https://github.com/tomav/docker-mailserver
     - look at mailinabox and mailcow and https://www.own-mailbox.com/
 
+- put info on which containers need secure network into compose?
 - need a webmail solution with sieve support and calendar
 - certs from letsencrypt
 - replication
   - http://blog.dovecot.org/2012/02/dovecot-clustering-with-dsync-based.html
   - http://wiki.dovecot.org/Replication
   - http://info.crunchydata.com/blog/easy-postgresql-cluster-recipe-using-docker-1.12
+  - https://www.darkalchemist.co.uk/2014/05/31/dovecot-dsync-replication/
 - dkim key rotation and generation hostname/date in selector
 
 - https://github.com/docker/labs/tree/master/Docker-Orchestration
