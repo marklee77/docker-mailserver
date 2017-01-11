@@ -1,47 +1,44 @@
 version: '2'
 
 services:
+
   postfix:
-    build: postfix
+    image: marklee77/postfix
     depends_on:
       - dovecot
       - ldap
       - db
+      - clamav
+      - spamd
     links:
       - dovecot
-    environment:
-      postfix_ldap_password:
-      postfix_ldap_tls: 'no'
 
   dovecot:
-    build: dovecot
+    image: marklee77/dovecot
     depends_on:
       - ldap
       - solr
+      - tika
     links:
       - ldap
       - solr
-    volumes:
-      - ./test:/var/lib/vmail/test
-    ports:
-      - "143:143"
-    environment:
-      dovecot_ldap_password:
-      dovecot_ldap_tls: 'no'
+      - tika
 
   solr:
-    build: solr
+    image: marklee77/solr
 
-  #tika:
-  #  image: logicalspark/docker-tikaserver
+  tika:
+    image: logicalspark/docker-tikaserver
 
   ldap:
-    image: marklee77/slapd-auth
-    environment:
-      slapd_admin_password:
-      slapd_require_ssl: 'no'
+    image: marklee77/fusiondirectory
 
   db:
     image: postgres
-    environment:
-      POSTGRES_PASSWORD:
+
+  clamav:
+    image: marklee77/clamav
+
+  spamd:
+    image: marklee77/spamd
+

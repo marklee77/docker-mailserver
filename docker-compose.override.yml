@@ -4,14 +4,6 @@ services:
 
   postfix:
     build: postfix
-    depends_on:
-      - dovecot
-      - ldap
-      - db
-      - clamav
-      - spamd
-    links:
-      - dovecot
     volumes:
       - ./test/ssl:/etc/ssl/postfix
     environment:
@@ -22,14 +14,6 @@ services:
 
   dovecot:
     build: dovecot
-    depends_on:
-      - ldap
-      - solr
-      - tika
-    links:
-      - ldap
-      - solr
-      - tika
     volumes:
       - ./test/ssl:/etc/ssl/dovecot
       - ./test/dovecot/vmail/test:/var/lib/vmail/test
@@ -43,11 +27,7 @@ services:
   solr:
     build: solr
 
-  tika:
-    image: logicalspark/docker-tikaserver
-
   ldap:
-    image: marklee77/fusiondirectory
     hostname: ldap
     volumes:
       - ./test/ssl:/etc/ssl/container
@@ -60,7 +40,6 @@ services:
       dovecot_ldap_password: password
 
   db:
-    image: postgres
     volumes:
       - ./test/sql:/docker-entrypoint-initdb.d
     environment:
@@ -74,3 +53,4 @@ services:
 
   spamd:
     build: spamd
+
