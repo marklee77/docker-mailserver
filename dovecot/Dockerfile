@@ -5,6 +5,7 @@ ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update && \
     apt-get -y install --no-install-recommends \
         curl \
+        iproute2 \
         dovecot-core \
         dovecot-imapd \
         dovecot-ldap \
@@ -12,14 +13,15 @@ RUN apt-get update && \
         dovecot-managesieved \
         dovecot-pop3d \
         dovecot-sieve \
-        dovecot-solr && \
+        dovecot-solr \
+        pwgen && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
 COPY root/var/lib/dovecot/default.sieve /var/lib/dovecot/
 RUN chmod 0644 /var/lib/dovecot/default.sieve
 RUN sievec /var/lib/dovecot/default.sieve
 
-RUN rm -rf /etc/dovecot/*
+RUN rm -rf /etc/dovecot/* && mkdir -m 0755 -p /etc/dovecot/conf.d
 
 RUN groupadd -g 1000 vmail
 RUN useradd -g 1000 -u 1000 -d /var/lib/vmail -s /bin/false vmail

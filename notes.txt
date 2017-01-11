@@ -1,3 +1,4 @@
+- dovecot, solr, tika, postfix on same local network?
 - okay, next thing: get mailserver running on local swarm
 
 - letsencrypt on host

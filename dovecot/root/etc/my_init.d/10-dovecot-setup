@@ -4,10 +4,15 @@
 : ${dovecot_ssl_dh_parameters_length:=4096}
 : ${dovecot_ssl_cert_file:=/etc/ssl/dovecot/dovecot.crt}
 : ${dovecot_ssl_key_file:=/etc/ssl/dovecot/dovecot.key}
+: ${dovecot_ssl_client_ca_file:=/etc/ssl/certs/ca-certificates.crt}
+
+: ${dovecot_mail_replica:=}
+: ${dovecot_doveadm_password:=$(pwgen -s1 32)}
+: ${dovecot_doveadm_port:=2727}
 
 : ${dovecot_ldap_url:=ldap://ldap}
 : ${dovecot_ldap_tls:=yes}
-: ${dovecot_ldap_tls_ca_cert_file:=/etc/ssl/certs/ca-certificates.crt}
+: ${dovecot_ldap_tls_ca_cert_file:=$dovecot_ssl_client_ca_file}
 : ${dovecot_ldap_tls_require_cert:=hard}
 : ${dovecot_ldap_basedn:=dc=ldap,dc=dit}
 : ${dovecot_ldap_password:=password}
@@ -48,6 +53,44 @@ iterate_filter = (objectClass=gosaMailAccount)
 EOF
 ln -s dovecot-ldap.conf.ext /etc/dovecot/dovecot-ldap-passdb.conf.ext
 ln -s dovecot-ldap.conf.ext /etc/dovecot/dovecot-ldap-userdb.conf.ext
+
+[ -n "$dovecot_mail_replica" ] && cat > /etc/dovecot/conf.d/replica.conf <<EOF
+
+# not a typo, apparently no < for this param
+ssl_client_ca_file = $dovecot_ssl_client_ca_file
+
+mail_plugins = $mail_plugins notify replication
+
+doveadm_port = $dovecot_doveadm_port
+doveadm_password = $dovecot_doveadm_password
+
+plugin {
+  mail_replica = tcps:$dovecot_mail_replica
+}
+
+service aggregator {
+  fifo_listener replication-notify-fifo {
+    user = vmail
+  }
+  unix_listener replication-notify {
+    user = vmail
+  }
+}
+
+service replicator {
+  process_min_avail = 1
+  unix_listener replicator-doveadm {
+    mode = 0600
+  }
+}
+
+service doveadm {
+  inet_listener {
+    port = 2727
+    ssl = yes
+  }
+}
+EOF
 
 # set normal umask
 umask 0022
@@ -133,6 +176,7 @@ plugin {
 }
 
 # authentication
+
 service auth {
   inet_listener {
     port = 8100
@@ -144,35 +188,11 @@ service auth {
 }
 
 # local delivery
+
 service lmtp {
   user = vmail
   inet_listener lmtp {
     port = 8025
-  }
-}
-
-protocol imap {
-  imap_client_workarounds = delay-newmail
-  mail_max_userip_connections = 10
-  mail_plugins = fts fts_solr
-}
-
-service imap-login {
-  inet_listener imaps {
-    # disable the imaps service
-    port = 0
-  }
-}
-
-protocol pop3 {
-  pop3_client_workarounds = outlook-no-nuls oe-ns-eoh
-  mail_max_userip_connections = 10
-}
-
-service pop3-login {
-  inet_listener pop3s {
-    # disable the pop3s service
-    port = 0
   }
 }
 
@@ -183,6 +203,38 @@ protocol lmtp {
   quota_full_tempfail = yes
   rejection_reason = Your message to <%t> was automatically rejected:%n%r
 }
+
+# imap
+
+service imap-login {
+  inet_listener imaps {
+    # disable the imaps service
+    port = 0
+  }
+}
+
+protocol imap {
+  imap_client_workarounds = delay-newmail
+  mail_max_userip_connections = 10
+  mail_plugins = fts fts_solr
+}
+
+# pop3
+
+service pop3-login {
+  inet_listener pop3s {
+    # disable the pop3s service
+    port = 0
+  }
+}
+
+protocol pop3 {
+  pop3_client_workarounds = outlook-no-nuls oe-ns-eoh
+  mail_max_userip_connections = 10
+}
+
+!include_try /etc/dovecot/conf.d/*
+
 EOF
 
 cat > /etc/cron.daily/dovecot-solr-optimize <<EOF
