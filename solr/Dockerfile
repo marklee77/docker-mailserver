@@ -1,4 +1,4 @@
-FROM solr:latest
+FROM solr:alpine
 MAINTAINER Mark Stillwell <mark@stillwell.me>
 
 RUN solr start && \
