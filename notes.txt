@@ -1,6 +1,9 @@
 - dovecot, solr, tika, postfix on same local network?
 - okay, next thing: get mailserver running on local swarm
+- https://docs.datastax.com/en/datastax_enterprise/4.6/datastax_enterprise/srch/srchUpld.html
+- solr cloud mode?
 
+- http://trimc-db.blogspot.co.uk/2015/04/apache-solr-and-docker-for-newbies.html
 - letsencrypt on host
 - bind9 container
 - orchestration / replication
