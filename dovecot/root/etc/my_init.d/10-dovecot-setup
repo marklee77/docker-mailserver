@@ -80,13 +80,14 @@ service aggregator {
 service replicator {
   process_min_avail = 1
   unix_listener replicator-doveadm {
-    mode = 0600
+    mode = 0660
+    group = vmail
   }
 }
 
 service doveadm {
   inet_listener {
-    port = 2727
+    port = $dovecot_doveadm_port
     ssl = yes
   }
 }
