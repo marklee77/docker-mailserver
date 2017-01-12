@@ -35,4 +35,4 @@ RUN chmod 0644 /etc/supervisor/conf.d/dovecot.conf
 
 VOLUME [ "/etc/dovecot", "/etc/ssl/dovecot", "/var/lib/dovecot", "/var/lib/vmail" ]
 
-EXPOSE 110 143 4190 8025 8100
+EXPOSE 110 143 4190 8025 8100 9027

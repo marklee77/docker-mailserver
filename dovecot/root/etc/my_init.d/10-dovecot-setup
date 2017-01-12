@@ -8,7 +8,6 @@
 
 : ${dovecot_mail_replica:=}
 : ${dovecot_doveadm_password:=$(pwgen -s1 32)}
-: ${dovecot_doveadm_port:=2727}
 
 : ${dovecot_ldap_url:=ldap://ldap}
 : ${dovecot_ldap_tls:=yes}
@@ -57,15 +56,15 @@ ln -s dovecot-ldap.conf.ext /etc/dovecot/dovecot-ldap-userdb.conf.ext
 [ -n "$dovecot_mail_replica" ] && cat > /etc/dovecot/conf.d/replica.conf <<EOF
 
 # not a typo, apparently no < for this param
-ssl_client_ca_file = $dovecot_ssl_client_ca_file
+#ssl_client_ca_file = $dovecot_ssl_client_ca_file
 
 mail_plugins = $mail_plugins notify replication
 
-doveadm_port = $dovecot_doveadm_port
+doveadm_port = 9027
 doveadm_password = $dovecot_doveadm_password
 
 plugin {
-  mail_replica = tcps:$dovecot_mail_replica
+  mail_replica = tcp:$dovecot_mail_replica
 }
 
 service aggregator {
@@ -254,3 +253,5 @@ chmod 755 /etc/cron.daily/dovecot-expunge
 cat > /etc/cron.d/dovecot <<EOF
 * * * * * dovecot curl "$dovecot_solr_url/update?commit=true" &>/dev/null
 EOF
+
+sleep 10
