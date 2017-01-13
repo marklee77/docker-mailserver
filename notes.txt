@@ -4,10 +4,17 @@
   - set up ca for dovecot/replica
   - figure out replication problems
 
+- cron job to do something with contents of spam folders...
+
+- solr network_mode: "service:dovecot"
 - compose .env file for shared secrets?
 - dovecot, solr, tika, postfix on same local network?
 - okay, next thing: get mailserver running on local swarm
 - https://docs.datastax.com/en/datastax_enterprise/4.6/datastax_enterprise/srch/srchUpld.html
+
+- slight changes to solr dockerfile?
+  https://github.com/docker-solr/docker-solr/issues/10
+- but then there's the config, compare against current...
 
 - http://trimc-db.blogspot.co.uk/2015/04/apache-solr-and-docker-for-newbies.html
 - letsencrypt on host
