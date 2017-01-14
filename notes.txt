@@ -1,10 +1,15 @@
+- tests
+  - ldap
+  - delivery
+  - replication
+  - fts
+
 - dovecot replication
-  - move to docker-compose.test.yml
-  - set up ca for dovecot/replica
+  - clean up ssl and set up ca for dovecot/replica
   - figure out replication problems
 
-- add appropriate test information to container
-- put static postfix in dockerfile
+- add appropriate test information to repository
+- put static postfix master.cf in dockerfile
 
 - dovecot virtual folders All / Flagged
 - cron job to do something with contents of spam folders...
