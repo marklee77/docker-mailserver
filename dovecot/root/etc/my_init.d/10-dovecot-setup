@@ -51,7 +51,7 @@ ln -s dovecot-ldap.conf.ext /etc/dovecot/dovecot-ldap-userdb.conf.ext
 # not a typo, apparently no < for this param
 #ssl_client_ca_file = $dovecot_ssl_client_ca_file
 
-mail_plugins = \$mail_plugins notify replication
+mail_plugins = notify replication
 
 doveadm_port = 9027
 doveadm_password = $dovecot_doveadm_password
