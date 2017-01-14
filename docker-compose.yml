@@ -4,41 +4,30 @@ services:
 
   postfix:
     image: marklee77/postfix
+    build: postfix
     depends_on:
       - dovecot
-      - ldap
-      - db
       - clamav
       - spamd
-    links:
-      - dovecot
 
   dovecot:
     image: marklee77/dovecot
+    build: dovecot
     depends_on:
-      - ldap
-      - solr
-      - tika
-    links:
-      - ldap
       - solr
       - tika
 
   solr:
     image: marklee77/solr
+    build: solr
 
   tika:
     image: logicalspark/docker-tikaserver
 
-  ldap:
-    image: marklee77/fusiondirectory
-
-  db:
-    image: postgres
-
   clamav:
     image: marklee77/clamav
+    build: clamav
 
   spamd:
     image: marklee77/spamd
-
+    build: spamd

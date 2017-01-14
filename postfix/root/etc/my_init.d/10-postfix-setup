@@ -15,7 +15,8 @@
 : ${postfix_message_size_limit:=104857600}
 : ${postfix_external_milters:=inet:clamav:1234, inet:spamd:1234}
 
-: ${postfix_sqlgrey_db_host:=db}
+: ${postfix_sqlgrey_db_type:=Pg}
+: ${postfix_sqlgrey_db_host:=postgres}
 : ${postfix_sqlgrey_db_port:=5432}
 : ${postfix_sqlgrey_db_name:=sqlgrey}
 : ${postfix_sqlgrey_db_user:=sqlgrey}
@@ -155,7 +156,7 @@ unix = /var/spool/postfix/sqlgrey/sqlgrey.sock
 connect_src_throttle = 5
 awl_age = 32
 group_domain_level = 2
-db_type = Pg
+db_type = $postfix_sqlgrey_db_type
 db_host = $postfix_sqlgrey_db_host
 db_port = $postfix_sqlgrey_db_port
 db_name = $postfix_sqlgrey_db_name

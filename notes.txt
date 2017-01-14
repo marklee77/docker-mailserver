@@ -3,8 +3,10 @@
   - set up ca for dovecot/replica
   - figure out replication problems
 
+- add appropriate test information to container
+- put static postfix in dockerfile
+
 - dovecot virtual folders All / Flagged
-- doveadm move Sent to Archive
 - cron job to do something with contents of spam folders...
 
 - solr network_mode: "service:dovecot"
