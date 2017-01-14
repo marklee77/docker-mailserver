@@ -1,6 +1,5 @@
 - dovecot replication
   - move to docker-compose.test.yml
-  - simplify dovecot setup by moving to more static files
   - set up ca for dovecot/replica
   - figure out replication problems
 
