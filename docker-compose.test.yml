@@ -55,7 +55,6 @@ services:
 
   ldap:
     image: marklee77/fusiondirectory
-    hostname: ldap
     volumes:
       - ./test/ssl:/etc/ssl/container
       - ./test/ldap/dbinit.d:/etc/ldap/dbinit.d/10-mailserver-test
