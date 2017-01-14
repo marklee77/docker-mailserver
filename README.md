@@ -1,5 +1,10 @@
 # docker-mailserver
 
+This is an opinionated service stack for deploying a mail server. LDAP and
+Fusiondirectory are used to manage user accounts and service settings, postfix
+provides SMTP services, while dovecot provides imap, pop, and sieve services.
+Spamassassin and clamd are milters that run in their own containers.
+
 ## Todo
 
 - Spamassassin Config: Some work needs to be done to add spamassassin
