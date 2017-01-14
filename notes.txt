@@ -4,6 +4,8 @@
   - set up ca for dovecot/replica
   - figure out replication problems
 
+- dovecot virtual folders All / Flagged
+- doveadm move Sent to Archive
 - cron job to do something with contents of spam folders...
 
 - solr network_mode: "service:dovecot"
