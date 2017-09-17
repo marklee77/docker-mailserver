@@ -49,7 +49,7 @@ ln -s dovecot-ldap.conf.ext /etc/dovecot/dovecot-ldap-userdb.conf.ext
 [ -n "$dovecot_mail_replica" ] && cat > /etc/dovecot/conf.d/replica.conf <<EOF
 
 # not a typo, apparently no < for this param
-#ssl_client_ca_file = $dovecot_ssl_client_ca_file
+ssl_client_ca_file = $dovecot_ssl_client_ca_file
 
 mail_plugins = notify replication
 
