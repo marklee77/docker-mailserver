@@ -10,8 +10,6 @@ cd /var/lib/spamassassin
 [ -d sa-update-keys ] || setuser debian-spamd sa-update --gpghomedir ./sa-update-keys
 
 [ -f /etc/spamassassin/local.cf ] || cat > /etc/spamassassin/local.cf <<EOF
-# report_safe 1
-# trusted_networks 212.17.35.
 lock_method flock
 required_score 5.0
 
