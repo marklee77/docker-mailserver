@@ -23,7 +23,7 @@
 - need to do docs
 - switch to alpine?
 
-- save sent mail in Archive?
+- save sent mail in Archive? -- or just have solr search against it...
 - compare against these, what's better, what's worse:
     - https://github.com/instrumentisto/docker-mailserver
     - https://rmohan.com/?p=6173
