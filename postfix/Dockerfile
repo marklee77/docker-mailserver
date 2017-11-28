@@ -1,5 +1,5 @@
 FROM marklee77/supervisor:xenial
-MAINTAINER Mark Stillwell <mark@stillwell.me>
+LABEL maintainer="Mark Stillwell <mark@stillwell.me>"
 
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update && \
