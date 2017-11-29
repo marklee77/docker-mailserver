@@ -1,11 +1,17 @@
 FROM solr:alpine
-MAINTAINER Mark Stillwell <mark@stillwell.me>
+LABEL maintainer="Mark Stillwell <mark@stillwell.me>"
 
-RUN solr start && \
-    solr create -c dovecot -d basic_configs && \
-    solr stop
-
-COPY *.xml /opt/solr/server/solr/dovecot/conf/
 USER root
-RUN chown solr:solr /opt/solr/server/solr/dovecot/conf/*
+
+RUN mkdir -m 0755 -p /data && \
+    chown solr:solr /data && \
+    rmdir /opt/solr/server/solr/mycores && \
+    ln -s /data /opt/solr/server/solr/mycores
+VOLUME ["/data"]
+
+COPY *.xml /opt/solr/server/solr/configsets/_default/conf/
+RUN chown solr:solr /opt/solr/server/solr/configsets/_default/conf/*.xml
+
 USER solr
+
+ENTRYPOINT ["docker-entrypoint.sh", "solr-precreate", "dovecot"]
