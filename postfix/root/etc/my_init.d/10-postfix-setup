@@ -13,14 +13,8 @@
 : ${postfix_ldap_password:=password}
 
 : ${postfix_message_size_limit:=104857600}
-: ${postfix_external_milters:=inet:clamav:1234, inet:spamd:1234}
-
-: ${postfix_sqlgrey_db_type:=Pg}
-: ${postfix_sqlgrey_db_host:=postgres}
-: ${postfix_sqlgrey_db_port:=5432}
-: ${postfix_sqlgrey_db_name:=sqlgrey}
-: ${postfix_sqlgrey_db_user:=sqlgrey}
-: ${postfix_sqlgrey_db_password:=password}
+: ${postfix_internal_milters:=}
+: ${postfix_external_milters:=}
 
 docker_network=$(ip a s eth0 | sed -n '/^\s*inet \([^ ]*\).*/{s//\1/p;q}')
 
@@ -149,51 +143,6 @@ EOF
 
 chown postfix /etc/postfix/ldap-*
 
-cat > /etc/sqlgrey/sqlgrey.conf <<EOF
-user = sqlgrey
-group = sqlgrey
-unix = /var/spool/postfix/sqlgrey/sqlgrey.sock
-connect_src_throttle = 5
-awl_age = 32
-group_domain_level = 2
-db_type = $postfix_sqlgrey_db_type
-db_host = $postfix_sqlgrey_db_host
-db_port = $postfix_sqlgrey_db_port
-db_name = $postfix_sqlgrey_db_name
-db_user = $postfix_sqlgrey_db_user
-db_pass = $postfix_sqlgrey_db_password
-EOF
-chown sqlgrey:sqlgrey /etc/sqlgrey/sqlgrey.conf
-
-cat > /etc/sqlgrey/psql-env.sh <<EOF
-export PGHOST="$postfix_sqlgrey_db_host"
-export PGPORT="$postfix_sqlgrey_db_port"
-export PGNAME="$postfix_sqlgrey_db_password"
-export PGUSER="$postfix_sqlgrey_db_user"
-export PGPASSWORD="$postfix_sqlgrey_db_password"
-EOF
-
-dkim_selector="${postfix_fqdn%%.*}-$(date +%Y%m%d)"
-
-opendkim-genkey -r -b 2048 -h sha256 -s $dkim_selector -D /etc/dkimkeys -d $postfix_fqdn
-
-cat > /etc/opendkim.conf <<EOF
-LDAPBindUser     cn=postfix,ou=dsa,$postfix_ldap_basedn
-LDAPBindPassword $postfix_ldap_password
-LDAPUseTLS       $([ "$postfix_ldap_tls" = "yes" ] && echo True || echo False)
-Canonicalization relaxed/relaxed
-InternalHosts    127.0.0.0/8, $docker_network
-Selector         $dkim_selector
-Domain           $postfix_ldap_url/ou=servers,ou=systems,$postfix_ldap_basedn?postfixMyDestinations?one?(&(objectClass=fdPostfixServer)(cn=$postfix_fqdn)(postfixMyDestinations=\$d))
-KeyFile          /etc/dkimkeys/${dkim_selector}.private
-PidFile          /var/run/opendkim/opendkim.pid
-UserID           opendkim:opendkim
-UMask            0117
-Socket           local:/var/spool/postfix/opendkim/opendkim.sock
-Syslog           yes
-SyslogSuccess    yes
-EOF
-
 # set normal umask
 umask 0022
 
@@ -220,7 +169,7 @@ submission inet  n       -       y       -       -       smtpd
   -o syslog_name=postfix/submission
   -o smtpd_client_restrictions=
   -o smtpd_helo_restrictions=
-  -o smtpd_milters=opendkim/opendkim.sock
+  -o smtpd_milters= $postfix_internal_milters
   -o smtpd_recipient_restrictions=
   -o smtpd_reject_unlisted_recipient=no
   -o smtpd_relay_restrictions=permit_sasl_authenticated,reject
@@ -252,8 +201,6 @@ virtual    unix  -       n       n       -       -       virtual
 lmtp       unix  -       -       y       -       -       lmtp
 anvil      unix  -       -       y       -       1       anvil
 scache     unix  -       -       y       -       1       scache
-policy-spf unix  -       n       n       -       0       spawn
-  user=nobody argv=/usr/bin/policyd-spf
 EOF
 
 cat > /etc/postfix/main.cf <<EOF
@@ -340,8 +287,6 @@ strict_rfc821_envelopes = yes
 postscreen_access_list = permit_mynetworks
 postscreen_greet_action = enforce
 
-policy-spf_time_limit = 3600s
-
 smtpd_recipient_restrictions =
     permit_mynetworks,
     reject_unauth_pipelining,
@@ -355,26 +300,10 @@ smtpd_recipient_restrictions =
     reject_unknown_recipient_domain,
     reject_unlisted_recipient,
     reject_unauth_destination,
-    check_policy_service unix:private/policy-spf,
-    check_policy_service unix:sqlgrey/sqlgrey.sock,
     permit
 
-milter_default_action = accept
-smtpd_milters = unix:opendkim/opendkim.sock,
-                unix:opendmarc/opendmarc.sock,
-                $postfix_external_milters
-non_smtpd_milters = unix:opendkim/opendkim.sock
-
 milter_connect_macros = i j {daemon_name} v {if_name} _
-EOF
-
-touch /etc/sqlgrey/clients_ip_whitelist.local
-touch /etc/sqlgrey/clients_fqdn_whitelist.local
-
-cat > /etc/opendmarc.conf <<EOF
-PidFile          /var/run/opendmarc/opendmarc.pid
-UserID           opendmarc:opendmarc
-UMask            0117
-Socket           local:/var/spool/postfix/opendmarc/opendmarc.sock
-Syslog           yes
+milter_default_action = accept
+smtpd_milters = $postfix_external_milters
+non_smtpd_milters = $postfix_internal_milters
 EOF

@@ -1,3 +1,12 @@
+- temporarily pulling dkim, dmarc, postgrey, spf from postfix container,
+  should run in own...
+
+- mail filtering
+  - greylisting with some whitelisting/blacklisting ability
+  - spf/dkim/dmarc
+  - clamav
+  - spamd
+
 - tests
   - ldap
   - delivery

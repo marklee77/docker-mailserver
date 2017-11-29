@@ -7,8 +7,6 @@ services:
     build: postfix
     depends_on:
       - dovecot
-      - clamav
-      - spamd
 
   dovecot:
     image: marklee77/dovecot
@@ -18,16 +16,8 @@ services:
       - tika
 
   solr:
-    image: marklee77/solr
+    image: marklee77/solr-dovecot
     build: solr
 
   tika:
     image: logicalspark/docker-tikaserver
-
-  clamav:
-    image: marklee77/clamav
-    build: clamav
-
-  spamd:
-    image: marklee77/spamd
-    build: spamd
