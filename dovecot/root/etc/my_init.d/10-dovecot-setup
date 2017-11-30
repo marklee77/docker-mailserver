@@ -16,13 +16,24 @@
 : ${dovecot_ldap_basedn:=dc=ldap,dc=dit}
 : ${dovecot_ldap_password:=password}
 
+docker_network=$(ip a s eth0 | sed -n '/^\s*inet \([^ ]*\).*/{s//\1/p;q}')
+
 # set secure umask
 umask 0227
+
+for var in dovecot_ssl_cert_file dovecot_ssl_key_file; do
+    file="$(eval "echo \"\$$var\"")"
+    [ -L "$file" ] && file="$(readlink "$file")"
+    dir="$(dirname "$file")"
+    mkdir -m 0755 -p "$dir"
+    eval "$var=\"$file\""
+done
 
 if ! [ -f "$dovecot_ssl_cert_file" ]; then
     openssl req -newkey rsa:2048 -x509 -nodes -days 365 \
         -subj "/CN=$(hostname)" \
         -out $dovecot_ssl_cert_file -keyout $dovecot_ssl_key_file
+    chmod 0444 $dovecot_ssl_cert_file
 fi
 
 dir="/var/lib/vmail"
@@ -106,7 +117,6 @@ ssl_cert = <$dovecot_ssl_cert_file
 ssl_key = <$dovecot_ssl_key_file
 EOF
 
-docker_network=$(ip a s eth0 | sed -n '/^\s*inet \([^ ]*\).*/{s//\1/p;q}')
 cat > /etc/dovecot/conf.d/trusted_networks.conf <<EOF
 login_trusted_networks = 127.0.0.0/8 $docker_network
 EOF

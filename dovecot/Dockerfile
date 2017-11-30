@@ -19,6 +19,10 @@ RUN apt-get update && \
         /var/cache/apt/* \
         /var/lib/apt/lists/*
 
+RUN mkdir -m 0755 -p /etc/ssl/dovecot && \
+    ln -s /data/dovecot/ssl/server.crt /etc/ssl/dovecot/server.crt && \
+    ln -s /data/dovecot/ssl/server.key /etc/ssl/dovecot/server.key
+
 RUN groupadd -g 1000 vmail && \
     useradd -g 1000 -u 1000 -d /var/lib/vmail -s /bin/false vmail && \
     ln -s /data/vmail /var/lib/vmail
