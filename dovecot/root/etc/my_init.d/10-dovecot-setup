@@ -25,6 +25,13 @@ if ! [ -f "$dovecot_ssl_cert_file" ]; then
         -out $dovecot_ssl_cert_file -keyout $dovecot_ssl_key_file
 fi
 
+dir="/var/lib/vmail"
+[ -L "$dir" ] && dir="$(readlink "$dir")"
+if [ ! -d "$dir" ]; then
+    mkdir -m 0770 -p "$dir"
+    chown -R vmail:vmail "$dir"
+fi
+
 cat > /etc/dovecot/dovecot-ldap.conf.ext <<EOF
 uris = $dovecot_ldap_url
 ldap_version = 3
@@ -91,7 +98,7 @@ umask 0022
 cat > /etc/dovecot/conf.d/ssl.conf <<EOF
 ssl = $dovecot_ssl
 ssl_protocols = !SSLv2 !SSLv3
-ssl_cipher_list = EECDH+AESGCM:EDH+AESGCM:EECDH+AES256:EDH+AES256
+ssl_cipher_list = ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:DHE-RSA-AES256-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA256
 ssl_prefer_server_ciphers = yes
 ssl_options = no_compression
 ssl_dh_parameters_length = $dovecot_ssl_dh_parameters_length
