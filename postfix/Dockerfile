@@ -8,10 +8,11 @@ RUN apt-get update && \
         postfix \
         postfix-ldap \
         postfix-pcre && \
-    rm -rf /var/lib/apt/lists/* /var/cache/apt/*
-
-RUN rm -rf /etc/aliases*
-RUN cd /etc/postfix && rm -f main.cf master.cf
+    rm -rf \
+        /etc/aliases* \
+        /etc/postfix/* \
+        /var/cache/apt/* \
+        /var/lib/apt/lists/*
 
 COPY root/usr/local/sbin/* /usr/local/sbin/
 RUN chmod 755 /usr/local/sbin/*
