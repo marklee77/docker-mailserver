@@ -23,15 +23,15 @@ RUN groupadd -g 1000 vmail && \
     useradd -g 1000 -u 1000 -d /var/lib/vmail -s /bin/false vmail && \
     ln -s /data/vmail /var/lib/vmail
 
-COPY root/var/lib/dovecot/default.sieve /var/lib/dovecot/
-RUN chmod 0644 /var/lib/dovecot/default.sieve
-RUN sievec /var/lib/dovecot/default.sieve
-
 RUN mkdir -m 0755 -p /etc/dovecot/conf.d
 COPY root/etc/dovecot/dovecot.conf /etc/dovecot/
 RUN chmod 0644 /etc/dovecot/dovecot.conf
 COPY root/etc/dovecot/conf.d/* /etc/dovecot/conf.d/
 RUN chmod 0644 /etc/dovecot/conf.d/*
+
+COPY root/var/lib/dovecot/default.sieve /var/lib/dovecot/
+RUN chmod 0644 /var/lib/dovecot/default.sieve
+RUN sievec /var/lib/dovecot/default.sieve
 
 COPY root/etc/cron.d/dovecot /etc/cron.d/
 RUN chmod 0644 /etc/cron.d/dovecot
