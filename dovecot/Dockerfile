@@ -1,7 +1,8 @@
 FROM marklee77/supervisor:xenial
 LABEL maintainer="Mark Stillwell <mark@stillwell.me>"
 
-RUN apt-get update && \
+RUN mkdir -p /tmp/run && \
+    apt-get update && \
     apt-get -y install --no-install-recommends \
         curl \
         iproute2 \
@@ -19,19 +20,29 @@ RUN apt-get update && \
         /var/cache/apt/* \
         /var/lib/apt/lists/*
 
-RUN mkdir -m 0755 -p /etc/ssl/dovecot && \
-    ln -s /data/dovecot/ssl/server.crt /etc/ssl/dovecot/server.crt && \
-    ln -s /data/dovecot/ssl/server.key /etc/ssl/dovecot/server.key
-
 RUN groupadd -g 1000 vmail && \
     useradd -g 1000 -u 1000 -d /var/lib/vmail -s /bin/false vmail && \
-    ln -s /data/vmail /var/lib/vmail
+    mkdir -m 0755 -p /etc/ssl/dovecot && \
+    ln -s /data/dovecot/ssl/server.crt /etc/ssl/dovecot/server.crt && \
+    ln -s /data/dovecot/ssl/server.key /etc/ssl/dovecot/server.key && \
+    ln -s /data/dovecot/config/dovecot/dovecot-ldap.conf.ext \
+          /etc/dovecot/dovecot-ldap.conf.ext && \
+    ln -s dovecot-ldap.conf.ext /etc/dovecot/dovecot-ldap-passdb.conf.ext && \
+    ln -s dovecot-ldap.conf.ext /etc/dovecot/dovecot-ldap-userdb.conf.ext && \
+    mkdir -m 0755 -p /etc/dovecot/conf.d && \
+    ln -s /data/dovecot/vmail /var/lib/vmail
 
-RUN mkdir -m 0755 -p /etc/dovecot/conf.d
 COPY root/etc/dovecot/dovecot.conf /etc/dovecot/
 RUN chmod 0644 /etc/dovecot/dovecot.conf
 COPY root/etc/dovecot/conf.d/* /etc/dovecot/conf.d/
-RUN chmod 0644 /etc/dovecot/conf.d/*
+# need to create symlinks *after* chmod
+RUN chmod 0644 /etc/dovecot/conf.d/* && \
+    ln -s /data/dovecot/config/dovecot/conf.d/replica.conf \
+          /etc/dovecot/conf.d/replica.conf && \
+    ln -s /data/dovecot/config/dovecot/conf.d/ssl.conf \
+          /etc/dovecot/conf.d/ssl.conf && \
+    ln -s /data/dovecot/config/dovecot/conf.d/trusted_networks.conf \
+          /etc/dovecot/conf.d/trusted_networks.conf
 
 COPY root/var/lib/dovecot/default.sieve /var/lib/dovecot/
 RUN chmod 0644 /var/lib/dovecot/default.sieve

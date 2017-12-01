@@ -1,9 +1,10 @@
 #!/bin/bash
+. /usr/local/share/my_init/functions.sh
 
 : ${dovecot_ssl:=required}
 : ${dovecot_ssl_dh_parameters_length:=4096}
-: ${dovecot_ssl_cert_file:=/etc/ssl/dovecot/dovecot.crt}
-: ${dovecot_ssl_key_file:=/etc/ssl/dovecot/dovecot.key}
+: ${dovecot_ssl_cert_file:=/etc/ssl/dovecot/server.crt}
+: ${dovecot_ssl_key_file:=/etc/ssl/dovecot/server.key}
 : ${dovecot_ssl_client_ca_file:=/etc/ssl/certs/ca-certificates.crt}
 
 : ${dovecot_mail_replica:=}
@@ -19,31 +20,24 @@
 docker_network=$(ip a s eth0 | sed -n '/^\s*inet \([^ ]*\).*/{s//\1/p;q}')
 
 # set secure umask
-umask 0227
+umask 027
 
 for var in dovecot_ssl_cert_file dovecot_ssl_key_file; do
-    file="$(eval "echo \"\$$var\"")"
-    [ -L "$file" ] && file="$(readlink "$file")"
-    dir="$(dirname "$file")"
-    mkdir -m 0755 -p "$dir"
-    eval "$var=\"$file\""
+    eval "$var=\"\$(mypath \$$var)\""
 done
-
 if ! [ -f "$dovecot_ssl_cert_file" ]; then
     openssl req -newkey rsa:2048 -x509 -nodes -days 365 \
         -subj "/CN=$(hostname)" \
-        -out $dovecot_ssl_cert_file -keyout $dovecot_ssl_key_file
-    chmod 0444 $dovecot_ssl_cert_file
+        -out "$dovecot_ssl_cert_file" -keyout "$dovecot_ssl_key_file"
+    chmod 0644 "$dovecot_ssl_cert_file"
 fi
 
-dir="/var/lib/vmail"
-[ -L "$dir" ] && dir="$(readlink "$dir")"
-if [ ! -d "$dir" ]; then
-    mkdir -m 0770 -p "$dir"
-    chown -R vmail:vmail "$dir"
-fi
+dir="$(mypath /var/lib/vmail)"
+mkdir -m 0770 -p "$dir"
+chown vmail:vmail "$dir"
 
-cat > /etc/dovecot/dovecot-ldap.conf.ext <<EOF
+file="$(mypath /etc/dovecot/dovecot-ldap.conf.ext)"
+cat > "$file" <<EOF
 uris = $dovecot_ldap_url
 ldap_version = 3
 tls = $dovecot_ldap_tls
@@ -61,10 +55,8 @@ user_filter = (&(objectClass=gosaMailAccount)(|(uid=%u)(mail=%u)))
 iterate_attrs = uid=user
 iterate_filter = (objectClass=gosaMailAccount)
 EOF
-ln -s dovecot-ldap.conf.ext /etc/dovecot/dovecot-ldap-passdb.conf.ext
-ln -s dovecot-ldap.conf.ext /etc/dovecot/dovecot-ldap-userdb.conf.ext
 
-[ -n "$dovecot_mail_replica" ] && cat > /etc/dovecot/conf.d/replica.conf <<EOF
+[ -n "$dovecot_mail_replica" ] && cat > "$(mypath /etc/dovecot/conf.d/replica.conf)" <<EOF
 
 # not a typo, apparently no < for this param
 ssl_client_ca_file = $dovecot_ssl_client_ca_file
@@ -97,7 +89,7 @@ service replicator {
 
 service doveadm {
   inet_listener {
-    port = $dovecot_doveadm_port
+    port = 9027
     ssl = yes
   }
 }
@@ -106,7 +98,7 @@ EOF
 # set normal umask
 umask 0022
 
-cat > /etc/dovecot/conf.d/ssl.conf <<EOF
+cat > "$(mypath /etc/dovecot/conf.d/ssl.conf)" <<EOF
 ssl = $dovecot_ssl
 ssl_protocols = !SSLv2 !SSLv3
 ssl_cipher_list = ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:DHE-RSA-AES256-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA256
@@ -117,6 +109,6 @@ ssl_cert = <$dovecot_ssl_cert_file
 ssl_key = <$dovecot_ssl_key_file
 EOF
 
-cat > /etc/dovecot/conf.d/trusted_networks.conf <<EOF
+cat > "$(mypath /etc/dovecot/conf.d/trusted_networks.conf)" <<EOF
 login_trusted_networks = 127.0.0.0/8 $docker_network
 EOF
