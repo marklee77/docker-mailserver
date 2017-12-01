@@ -1,4 +1,6 @@
 #!/bin/bash
+. /usr/local/share/my_init/functions.sh
+
 : ${postfix_fqdn:=localhost.localdomain}
 
 : ${postfix_ssl_ca_cert_file:=/etc/ssl/certs/ca-certificates.crt}
@@ -12,39 +14,38 @@
 : ${postfix_ldap_basedn:=dc=ldap,dc=dit}
 : ${postfix_ldap_password:=password}
 
+# default maximum is 100M
 : ${postfix_message_size_limit:=104857600}
+
 : ${postfix_internal_milters:=}
 : ${postfix_external_milters:=}
 
 docker_network=$(ip a s eth0 | sed -n '/^\s*inet \([^ ]*\).*/{s//\1/p;q}')
 
 # set secure umask
-umask 0227
+umask 027
 
 for var in postfix_ssl_cert_file postfix_ssl_key_file; do
-    file="$(eval "echo \"\$$var\"")"
-    [ -L "$file" ] && file="$(readlink "$file")"
-    dir="$(dirname "$file")"
-    mkdir -m 0755 -p "$dir"
-    eval "$var=\"$file\""
+    eval "$var=\"\$(mypath \$$var)\""
 done
-
 if ! [ -f "$postfix_ssl_cert_file" ]; then
     openssl req -newkey rsa:2048 -x509 -nodes -days 365 \
         -subj "/CN=$(hostname)" \
         -out $postfix_ssl_cert_file -keyout $postfix_ssl_key_file
-    chmod 0444 $postfix_ssl_cert_file
+    chmod 0644 $postfix_ssl_cert_file
 fi
 
-if ! [ -f "$postfix_ssl_ca_cert_file" ]; then
-    ln -s "$postfix_ssl_cert_file" "$postfix_ssl_ca_cert_file"
+file="$(mypath /etc/ldap/ldap.passwd)"
+if [ -f "$file" ]; then
+    postfix_ldap_password="$(cat "$file")"
+else
+    echo -n "$postfix_ldap_password" > "$file"
 fi
 
-[ -f "/etc/postfix/master.cf" ] && exit 0
+dir="$(mypath /etc/postfix/conf.d)"
+mkdir -m 0755 -p "$dir"
 
-echo -n "$postfix_ldap_password" > /etc/ldap/ldap.passwd
-
-cat > /etc/postfix/ldap-domains.cf <<EOF
+cat > /etc/postfix/conf.d/ldap-domains.cf <<EOF
 server_host = $postfix_ldap_url
 version = 3
 start_tls = $postfix_ldap_tls
@@ -59,7 +60,7 @@ query_filter = (&(objectClass=fdPostfixServer)(cn=$postfix_fqdn)(postfixMyDestin
 result_attribute = cn
 EOF
 
-cat > /etc/postfix/ldap-accounts.cf <<EOF
+cat > /etc/postfix/conf.d/ldap-accounts.cf <<EOF
 server_host = $postfix_ldap_url
 version = 3
 start_tls = $postfix_ldap_tls
@@ -74,7 +75,7 @@ query_filter = (&(objectClass=gosaMailAccount)(!(gosaMailDeliveryMode=[*I*]))(ma
 result_attribute = mail
 EOF
 
-cat > /etc/postfix/ldap-alias-distributions.cf <<EOF
+cat > /etc/postfix/conf.d/ldap-alias-distributions.cf <<EOF
 server_host = $postfix_ldap_url
 version = 3
 start_tls = $postfix_ldap_tls
@@ -91,7 +92,7 @@ query_filter = (&(objectClass=mailAliasDistribution)(gosaMailAlternateAddress=%s
 result_attribute = mail
 EOF
 
-cat > /etc/postfix/ldap-alias-redirections.cf <<EOF
+cat > /etc/postfix/conf.d/ldap-alias-redirections.cf <<EOF
 server_host = $postfix_ldap_url
 version = 3
 start_tls = $postfix_ldap_tls
@@ -108,7 +109,7 @@ query_filter = (&(objectClass=mailAliasRedirection)(mail=%s))
 result_attribute = gosaMailForwardingAddress
 EOF
 
-cat > /etc/postfix/ldap-forward.cf <<EOF
+cat > /etc/postfix/conf.d/ldap-forward.cf <<EOF
 server_host = $postfix_ldap_url
 version = 3
 start_tls = $postfix_ldap_tls
@@ -123,7 +124,7 @@ query_filter = (&(objectClass=gosaMailAccount)(!(gosaMailDeliveryMode=[*I*]))(|(
 result_attribute = mail,gosaMailForwardingAddress
 EOF
 
-cat > /etc/postfix/ldap-forward-only.cf <<EOF
+cat > /etc/postfix/conf.d/ldap-forward-only.cf <<EOF
 server_host = $postfix_ldap_url
 version = 3
 start_tls = $postfix_ldap_tls
@@ -138,7 +139,7 @@ query_filter = (&(objectClass=gosaMailAccount)(gosaMailDeliveryMode=[*I*])(|(mai
 result_attribute = gosaMailForwardingAddress
 EOF
 
-cat > /etc/postfix/ldap-alternates.cf <<EOF
+cat > /etc/postfix/conf.d/ldap-alternates.cf <<EOF
 server_host = $postfix_ldap_url
 version = 3
 start_tls = $postfix_ldap_tls
@@ -153,21 +154,21 @@ query_filter = (&(objectClass=gosaMailAccount)(!(gosaMailDeliveryMode=[*I*]))(go
 result_attribute = mail
 EOF
 
-chown postfix /etc/postfix/ldap-*
+chown postfix:postfix /etc/postfix/conf.d/*
 
 # set normal umask
-umask 0022
+umask 022
 
-echo $postfix_fqdn > /etc/mailname
+echo "$postfix_fqdn" > "$(mypath /etc/mailname)"
 
-cat > /etc/ldap/ldap.conf <<EOF
+cat > "$(mypath /etc/ldap/ldap.conf)" <<EOF
 URI $postfix_ldap_url
 BINDDN cn=postfix,ou=dsa,$postfix_ldap_basedn
 BASE $postfix_ldap_basedn
 TLS_CACERT $postfix_ldap_tls_ca_cert_file
 EOF
 
-cat > /etc/postfix/master.cf <<EOF
+cat > "$(mypath /etc/postfix/master.cf)" <<EOF
 # ==========================================================================
 # service  type  private unpriv  chroot  wakeup  maxproc command + args
 #                (yes)   (yes)   (no)    (never) (100)
@@ -181,7 +182,7 @@ submission inet  n       -       y       -       -       smtpd
   -o syslog_name=postfix/submission
   -o smtpd_client_restrictions=
   -o smtpd_helo_restrictions=
-  -o "smtpd_milters=$postfix_internal_milters"
+  -o smtpd_milters=$postfix_internal_milters
   -o smtpd_recipient_restrictions=
   -o smtpd_reject_unlisted_recipient=no
   -o smtpd_relay_restrictions=permit_sasl_authenticated,reject
@@ -215,7 +216,7 @@ anvil      unix  -       -       y       -       1       anvil
 scache     unix  -       -       y       -       1       scache
 EOF
 
-cat > /etc/postfix/main.cf <<EOF
+cat > "$(mypath /etc/postfix/main.cf)" <<EOF
 # COMPATIBILITY
 
 compatibility_level = 2
@@ -237,13 +238,13 @@ alias_database =
 alias_maps =
 
 virtual_transport = lmtp:inet:dovecot:8025
-virtual_mailbox_domains = proxy:ldap:/etc/postfix/ldap-domains.cf
-virtual_mailbox_maps = proxy:ldap:/etc/postfix/ldap-accounts.cf
-virtual_alias_maps = proxy:ldap:/etc/postfix/ldap-alias-distributions.cf,
-                     proxy:ldap:/etc/postfix/ldap-alias-redirections.cf,
-                     proxy:ldap:/etc/postfix/ldap-forward.cf,
-                     proxy:ldap:/etc/postfix/ldap-forward-only.cf,
-                     proxy:ldap:/etc/postfix/ldap-alternates.cf
+virtual_mailbox_domains = proxy:ldap:/etc/postfix/conf.d/ldap-domains.cf
+virtual_mailbox_maps = proxy:ldap:/etc/postfix/conf.d/ldap-accounts.cf
+virtual_alias_maps = proxy:ldap:/etc/postfix/conf.d/ldap-alias-distributions.cf,
+                     proxy:ldap:/etc/postfix/conf.d/ldap-alias-redirections.cf,
+                     proxy:ldap:/etc/postfix/conf.d/ldap-forward.cf,
+                     proxy:ldap:/etc/postfix/conf.d/ldap-forward-only.cf,
+                     proxy:ldap:/etc/postfix/conf.d/ldap-alternates.cf
 
 # TRUST AND RELAY CONTROL
 
