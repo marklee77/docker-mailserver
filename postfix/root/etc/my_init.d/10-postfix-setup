@@ -31,8 +31,8 @@ done
 if ! [ -f "$postfix_ssl_cert_file" ]; then
     openssl req -newkey rsa:2048 -x509 -nodes -days 365 \
         -subj "/CN=$(hostname)" \
-        -out $postfix_ssl_cert_file -keyout $postfix_ssl_key_file
-    chmod 0644 $postfix_ssl_cert_file
+        -out "$postfix_ssl_cert_file" -keyout "$postfix_ssl_key_file"
+    chmod 0644 "$postfix_ssl_cert_file"
 fi
 
 file="$(mypath /etc/ldap/ldap.passwd)"
