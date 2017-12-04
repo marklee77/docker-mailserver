@@ -2,8 +2,8 @@ version: "3.3"
 services:
 
   postfix:
-    image: marklee77/postfix
-    build: postfix
+    image: 127.0.0.1:5000/postfix
+    build: ../postfix
     depends_on:
       - dovecot
       - ldap
@@ -16,8 +16,8 @@ services:
       postfix_ldap_tls_ca_cert_file: /etc/ssl/postfix/ldap-ca.crt
 
   dovecot:
-    image: marklee77/dovecot
-    build: dovecot
+    image: 127.0.0.1:5000/dovecot
+    build: ../dovecot
     depends_on:
       - ldap
       - solr
@@ -34,8 +34,7 @@ services:
       dovecot_doveadm_password: password
 
   replica:
-    image: marklee77/dovecot
-    build: dovecot
+    image: 127.0.0.1:5000/dovecot
     depends_on:
       - ldap
       - solr
@@ -50,8 +49,8 @@ services:
       dovecot_doveadm_password: password
 
   solr:
-    image: marklee77/solr-dovecot
-    build: solr
+    image: 127.0.0.1:5000/solr-dovecot
+    build: ../solr
 
   tika:
     image: logicalspark/docker-tikaserver
@@ -80,12 +79,12 @@ services:
 
 configs:
   slapd_ssl_ca_cert:
-    file: ./test/slapd/ssl/ca.crt
+    file: ./slapd/ssl/ca.crt
   slapd_ssl_cert:
-    file: ./test/slapd/ssl/server.crt
+    file: ./slapd/ssl/server.crt
   mailserver_dbinit:
-    file: ./test/slapd/mailserver-dbinit.sh
+    file: ./slapd/mailserver-dbinit.sh
 
 secrets:
   slapd_ssl_key:
-    file: ./test/slapd/ssl/server.key
+    file: ./slapd/ssl/server.key
