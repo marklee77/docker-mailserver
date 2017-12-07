@@ -13,7 +13,9 @@ RUN mkdir -p /tmp/run && \
         /etc/aliases* \
         /etc/ldap/ldap.conf \
         /etc/mailname \
-        /etc/postfix/* \
+        /etc/postfix/*.proto \
+        /etc/postfix/main.cf \
+        /etc/postfix/master.cf \
         /var/cache/apt/* \
         /var/lib/apt/lists/*
 
