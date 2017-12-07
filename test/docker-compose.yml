@@ -2,7 +2,7 @@ version: "3.3"
 services:
 
   postfix:
-    image: 127.0.0.1:5000/postfix
+    image: "127.0.0.1:5000/postfix"
     build: ../postfix
     depends_on:
       - dovecot
@@ -11,19 +11,19 @@ services:
       - source: slapd_ssl_ca_cert
         target: /etc/ssl/postfix/ldap-ca.crt
     environment:
-      postfix_fqdn: mail.test.com
+      postfix_fqdn: mail.fakedomain.test
       postfix_ldap_password: password
       postfix_ldap_tls_ca_cert_file: /etc/ssl/postfix/ldap-ca.crt
 
   dovecot:
-    image: 127.0.0.1:5000/dovecot
+    image: "127.0.0.1:5000/dovecot"
     build: ../dovecot
     depends_on:
       - ldap
       - solr
       - tika
     ports:
-      - "127.0.0.1:143:143"
+      - "143:143"
     configs:
       - source: slapd_ssl_ca_cert
         target: /etc/ssl/dovecot/ldap-ca.crt
@@ -34,7 +34,7 @@ services:
       dovecot_doveadm_password: password
 
   replica:
-    image: 127.0.0.1:5000/dovecot
+    image: "127.0.0.1:5000/dovecot"
     depends_on:
       - ldap
       - solr
@@ -49,7 +49,7 @@ services:
       dovecot_doveadm_password: password
 
   solr:
-    image: 127.0.0.1:5000/solr-dovecot
+    image: "127.0.0.1:5000/solr-dovecot"
     build: ../solr
 
   tika:
@@ -58,7 +58,7 @@ services:
   ldap:
     image: marklee77/fusiondirectory
     ports:
-      - "127.0.0.1:80:80"
+      - "80:80"
     configs:
       - source: slapd_ssl_ca_cert
         target: /etc/ssl/slapd/ca.crt
