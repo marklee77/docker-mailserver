@@ -29,4 +29,27 @@ userPassword: $(slappasswd -s "password")
 objectClass: organizationalRole
 objectClass: top
 objectClass: simpleSecurityObject
+
+dn: ou=systems,dc=ldap,dc=dit
+objectClass: organizationalUnit
+ou: systems
+
+dn: ou=servers,ou=systems,dc=ldap,dc=dit
+objectClass: organizationalUnit
+ou: servers
+
+dn: cn=mail.fakedomain.test,ou=servers,ou=systems,dc=ldap,dc=dit
+cn: mail.fakedomain.test
+fdMode: unlocked
+ipHostNumber: 127.0.0.1
+objectClass: fdServer
+objectClass: ipHost
+objectClass: ieee802Device
+objectClass: fdPostfixServer
+postfixMyHostname: mail
+postfixMyDomain: fakedomain.test
+postfixHeaderSizeLimit: 0
+postfixMailboxSizeLimit: 0
+postfixMessageSizeLimit: 0
+postfixMyDestinations: fakedomain.test
 EOF
