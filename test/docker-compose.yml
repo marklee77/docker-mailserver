@@ -31,6 +31,7 @@ services:
       dovecot_ldap_password: password
       dovecot_ldap_tls_ca_cert_file: /etc/ssl/dovecot/ldap-ca.crt
       dovecot_ssl_dh_parameters_length: "1024"
+      dovecot_mail_replica: replica
       dovecot_doveadm_password: password
 
   replica:
@@ -46,6 +47,7 @@ services:
       dovecot_ldap_password: password
       dovecot_ldap_tls_ca_cert_file: /etc/ssl/dovecot/ldap-ca.crt
       dovecot_ssl_dh_parameters_length: "1024"
+      dovecot_mail_replica: dovecot
       dovecot_doveadm_password: password
 
   solr:
