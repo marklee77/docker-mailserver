@@ -67,7 +67,7 @@ doveadm_port = 9027
 doveadm_password = $dovecot_doveadm_password
 
 plugin {
-  mail_replica = tcp:$dovecot_mail_replica
+  mail_replica = tcps:$dovecot_mail_replica
 }
 
 service aggregator {
