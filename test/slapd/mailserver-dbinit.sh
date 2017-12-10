@@ -58,6 +58,7 @@ cn: Testee McTesterton
 sn: McTesterton
 givenName: Testee
 uid: test
+userPassword: $(slappasswd -s "password")
 mail: test@fakedomain.test
 gosaMailAlternateAddress: test2@fakedomain.test
 gosaMailDeliveryMode: []
