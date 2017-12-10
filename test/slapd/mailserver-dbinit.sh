@@ -52,4 +52,17 @@ postfixHeaderSizeLimit: 0
 postfixMailboxSizeLimit: 0
 postfixMessageSizeLimit: 0
 postfixMyDestinations: fakedomain.test
+
+dn: uid=test,ou=people,dc=ldap,dc=dit
+cn: Testee McTesterton
+sn: McTesterton
+givenName: Testee
+uid: test
+mail: test@fakedomain.test
+gosaMailAlternateAddress: test2@fakedomain.test
+gosaMailDeliveryMode: []
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: gosaMailAccount
 EOF
