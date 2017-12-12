@@ -36,6 +36,8 @@ RUN chmod 0644 /etc/dovecot/dovecot.conf
 COPY root/etc/dovecot/conf.d/* /etc/dovecot/conf.d/
 # need to create symlinks *after* chmod
 RUN chmod 0644 /etc/dovecot/conf.d/* && \
+    ln -s /data/dovecot/config/dovecot/conf.d/protocols.conf \
+          /etc/dovecot/conf.d/protocols.conf && \
     ln -s /data/dovecot/config/dovecot/conf.d/replica.conf \
           /etc/dovecot/conf.d/replica.conf && \
     ln -s /data/dovecot/config/dovecot/conf.d/ssl.conf \

@@ -3,16 +3,30 @@
 
 : ${dovecot_ssl:=required}
 : ${dovecot_ssl_dh_parameters_length:=4096}
+: ${dovecot_ssl_ca_cert_file:=/etc/ssl/certs/ca-certificates.crt}
 : ${dovecot_ssl_cert_file:=/etc/ssl/dovecot/server.crt}
 : ${dovecot_ssl_key_file:=/etc/ssl/dovecot/server.key}
-: ${dovecot_ssl_client_ca_file:=/etc/ssl/certs/ca-certificates.crt}
+
+: ${dovecot_ssl_client_ca_file:=$dovecot_ssl_ca_cert_file}
+
+: ${dovecot_external_ssl_cert_file:=$dovecot_ssl_cert_file}
+: ${dovecot_external_ssl_key_file:=$dovecot_ssl_key_file}
+
+: ${dovecot_imap_ssl_cert_file:=$dovecot_external_ssl_cert_file}
+: ${dovecot_imap_ssl_key_file:=$dovecot_external_ssl_key_file}
+
+: ${dovecot_pop3_ssl_cert_file:=$dovecot_external_ssl_cert_file}
+: ${dovecot_pop3_ssl_key_file:=$dovecot_external_ssl_key_file}
+
+: ${dovecot_sieve_ssl_cert_file:=$dovecot_external_ssl_cert_file}
+: ${dovecot_sieve_ssl_key_file:=$dovecot_external_ssl_key_file}
 
 : ${dovecot_mail_replica:=}
 : ${dovecot_doveadm_password:=$(pwgen -s1 32)}
 
 : ${dovecot_ldap_url:=ldap://ldap}
 : ${dovecot_ldap_tls:=yes}
-: ${dovecot_ldap_tls_ca_cert_file:=$dovecot_ssl_client_ca_file}
+: ${dovecot_ldap_tls_ca_cert_file:=$dovecot_ssl_ca_cert_file}
 : ${dovecot_ldap_tls_require_cert:=hard}
 : ${dovecot_ldap_basedn:=dc=ldap,dc=dit}
 : ${dovecot_ldap_password:=password}
@@ -34,8 +48,7 @@ dir="$(mypath /var/lib/vmail)"
 mkdir -m 0770 -p "$dir"
 chown vmail:vmail "$dir"
 
-file="$(mypath /etc/dovecot/dovecot-ldap.conf.ext)"
-cat > "$file" <<EOF
+cat > "$(mypath /etc/dovecot/dovecot-ldap.conf.ext)" <<EOF
 uris = $dovecot_ldap_url
 ldap_version = 3
 tls = $dovecot_ldap_tls
@@ -54,18 +67,18 @@ iterate_attrs = uid=user
 iterate_filter = (objectClass=gosaMailAccount)
 EOF
 
-[ -n "$dovecot_mail_replica" ] && cat > "$(mypath /etc/dovecot/conf.d/replica.conf)" <<EOF
-
+cat > "$(mypath /etc/dovecot/conf.d/replica.conf)" <<EOF
 # not a typo, apparently no < for this param
 ssl_client_ca_file = $dovecot_ssl_client_ca_file
 
-mail_plugins = notify replication
+mail_plugins = \$mail_plugins notify replication
 
 doveadm_port = 9027
 doveadm_password = $dovecot_doveadm_password
 
 plugin {
-  mail_replica = tcps:$dovecot_mail_replica
+  $([ -n "$dovecot_mail_replica" ] || echo -n "#")mail_replica = tcps:$dovecot_mail_replica
+  replica_sync_timeout = 2s
 }
 
 service aggregator {
@@ -105,4 +118,36 @@ ssl_options = no_compression
 ssl_dh_parameters_length = $dovecot_ssl_dh_parameters_length
 ssl_cert = <$dovecot_ssl_cert_file
 ssl_key = <$dovecot_ssl_key_file
+EOF
+
+cat > "$(mypath /etc/dovecot/conf.d/protocols.conf)" <<EOF
+protocols = lmtp imap pop3 sieve
+
+protocol lmtp {
+  deliver_log_format = msgid=%m: %$
+  mail_plugins = quota sieve
+  postmaster_address = postmaster
+  quota_full_tempfail = yes
+  rejection_reason = Your message to <%t> was automatically rejected:%n%r
+}
+
+protocol imap {
+  imap_client_workarounds = delay-newmail
+  mail_max_userip_connections = 10
+  mail_plugins = fts fts_solr
+  ssl_cert = <$dovecot_imap_ssl_cert_file
+  ssl_key = <$dovecot_imap_ssl_key_file
+}
+
+protocol pop3 {
+  pop3_client_workarounds = outlook-no-nuls oe-ns-eoh
+  mail_max_userip_connections = 10
+  ssl_cert = <$dovecot_pop3_ssl_cert_file
+  ssl_key = <$dovecot_pop3_ssl_key_file
+}
+
+protocol sieve {
+  ssl_cert = <$dovecot_sieve_ssl_cert_file
+  ssl_key = <$dovecot_sieve_ssl_key_file
+}
 EOF
