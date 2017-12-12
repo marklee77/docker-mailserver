@@ -17,8 +17,6 @@
 : ${dovecot_ldap_basedn:=dc=ldap,dc=dit}
 : ${dovecot_ldap_password:=password}
 
-docker_network=$(ip a s eth0 | sed -n '/^\s*inet \([^ ]*\).*/{s//\1/p;q}')
-
 # set secure umask
 umask 027
 
@@ -101,7 +99,7 @@ umask 0022
 cat > "$(mypath /etc/dovecot/conf.d/ssl.conf)" <<EOF
 ssl = $dovecot_ssl
 ssl_protocols = !SSLv2 !SSLv3
-ssl_cipher_list = ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:DHE-RSA-AES256-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA256
+ssl_cipher_list = $(openssl_ciphers)
 ssl_prefer_server_ciphers = yes
 ssl_options = no_compression
 ssl_dh_parameters_length = $dovecot_ssl_dh_parameters_length
@@ -110,5 +108,5 @@ ssl_key = <$dovecot_ssl_key_file
 EOF
 
 cat > "$(mypath /etc/dovecot/conf.d/trusted_networks.conf)" <<EOF
-login_trusted_networks = 127.0.0.0/8 $docker_network
+login_trusted_networks = 127.0.0.0/8
 EOF
