@@ -8,12 +8,12 @@ services:
       - dovecot
       - ldap
     configs:
-      - source: ldap_ssl_ca_cert
-        target: /etc/ssl/postfix/ldap-ca.crt
+      - source: ssl_ca_cert
+        target: /etc/ssl/postfix/ca.crt
     environment:
       postfix_fqdn: mail.fakedomain.test
       postfix_ldap_password: password
-      postfix_ldap_tls_ca_cert_file: /etc/ssl/postfix/ldap-ca.crt
+      postfix_ldap_tls_ca_cert_file: /etc/ssl/postfix/ca.crt
 
   dovecot:
     image: "127.0.0.1:5000/dovecot"
@@ -25,10 +25,8 @@ services:
     ports:
       - "143:143"
     configs:
-      - source: ldap_ssl_ca_cert
-        target: /etc/ssl/dovecot/ldap-ca.crt
-      - source: dovecot_ssl_client_ca_cert
-        target: /etc/ssl/dovecot/dovecot-ca.crt
+      - source: ssl_ca_cert
+        target: /etc/ssl/dovecot/ca.crt
       - source: dovecot_ssl_cert
         target: /etc/ssl/dovecot/server.crt
     secrets:
@@ -37,9 +35,8 @@ services:
         mode: 0400
     environment:
       dovecot_ldap_password: password
-      dovecot_ldap_tls_ca_cert_file: /etc/ssl/dovecot/ldap-ca.crt
       dovecot_ssl_dh_parameters_length: "1024"
-      dovecot_ssl_client_ca_file: /etc/ssl/dovecot/dovecot-ca.crt
+      dovecot_ssl_ca_cert_file: /etc/ssl/dovecot/ca.crt
       dovecot_mail_replica: replica
       dovecot_doveadm_password: password
 
@@ -50,10 +47,8 @@ services:
       - solr
       - tika
     configs:
-      - source: ldap_ssl_ca_cert
-        target: /etc/ssl/dovecot/ldap-ca.crt
-      - source: dovecot_ssl_client_ca_cert
-        target: /etc/ssl/dovecot/dovecot-ca.crt
+      - source: ssl_ca_cert
+        target: /etc/ssl/dovecot/ca.crt
       - source: replica_ssl_cert
         target: /etc/ssl/dovecot/server.crt
     secrets:
@@ -62,9 +57,8 @@ services:
         mode: 0400
     environment:
       dovecot_ldap_password: password
-      dovecot_ldap_tls_ca_cert_file: /etc/ssl/dovecot/ldap-ca.crt
       dovecot_ssl_dh_parameters_length: "1024"
-      dovecot_ssl_client_ca_file: /etc/ssl/dovecot/dovecot-ca.crt
+      dovecot_ssl_ca_cert_file: /etc/ssl/dovecot/ca.crt
       dovecot_mail_replica: dovecot
       dovecot_doveadm_password: password
 
@@ -80,7 +74,7 @@ services:
     ports:
       - "80:80"
     configs:
-      - source: ldap_ssl_ca_cert
+      - source: ssl_ca_cert
         target: /etc/ssl/slapd/ca.crt
       - source: ldap_ssl_cert
         target: /etc/ssl/slapd/server.crt
@@ -98,12 +92,10 @@ services:
       slapd_admin_password: password
 
 configs:
-  ldap_ssl_ca_cert:
+  ssl_ca_cert:
     file: ./ssl/certs/ca.cert.pem
   ldap_ssl_cert:
     file: ./ssl/certs/ldap.cert.pem
-  dovecot_ssl_client_ca_cert:
-    file: ./ssl/certs/ca.cert.pem
   dovecot_ssl_cert:
     file: ./ssl/certs/dovecot.cert.pem
   replica_ssl_cert:
