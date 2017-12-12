@@ -5,7 +5,6 @@ RUN mkdir -p /tmp/run && \
     apt-get update && \
     apt-get -y install --no-install-recommends \
         iproute2 \
-        ldap-utils \
         postfix \
         postfix-ldap \
         postfix-pcre && \
