@@ -5,7 +5,6 @@ RUN mkdir -p /tmp/run && \
     apt-get update && \
     apt-get -y install --no-install-recommends \
         curl \
-        iproute2 \
         dovecot-core \
         dovecot-imapd \
         dovecot-ldap \
@@ -40,9 +39,7 @@ RUN chmod 0644 /etc/dovecot/conf.d/* && \
     ln -s /data/dovecot/config/dovecot/conf.d/replica.conf \
           /etc/dovecot/conf.d/replica.conf && \
     ln -s /data/dovecot/config/dovecot/conf.d/ssl.conf \
-          /etc/dovecot/conf.d/ssl.conf && \
-    ln -s /data/dovecot/config/dovecot/conf.d/trusted_networks.conf \
-          /etc/dovecot/conf.d/trusted_networks.conf
+          /etc/dovecot/conf.d/ssl.conf
 
 COPY root/var/lib/dovecot/default.sieve /var/lib/dovecot/
 RUN chmod 0644 /var/lib/dovecot/default.sieve

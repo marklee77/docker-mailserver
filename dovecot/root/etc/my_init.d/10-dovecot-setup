@@ -106,7 +106,3 @@ ssl_dh_parameters_length = $dovecot_ssl_dh_parameters_length
 ssl_cert = <$dovecot_ssl_cert_file
 ssl_key = <$dovecot_ssl_key_file
 EOF
-
-cat > "$(mypath /etc/dovecot/conf.d/trusted_networks.conf)" <<EOF
-login_trusted_networks = 127.0.0.0/8
-EOF
