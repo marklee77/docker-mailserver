@@ -125,7 +125,7 @@ protocols = lmtp imap pop3 sieve
 
 protocol lmtp {
   deliver_log_format = msgid=%m: %$
-  mail_plugins = quota sieve
+  mail_plugins = \$mail_plugins quota sieve
   postmaster_address = postmaster
   quota_full_tempfail = yes
   rejection_reason = Your message to <%t> was automatically rejected:%n%r
@@ -134,7 +134,7 @@ protocol lmtp {
 protocol imap {
   imap_client_workarounds = delay-newmail
   mail_max_userip_connections = 10
-  mail_plugins = fts fts_solr
+  mail_plugins = \$mail_plugins fts fts_solr
   ssl_cert = <$dovecot_imap_ssl_cert_file
   ssl_key = <$dovecot_imap_ssl_key_file
 }
