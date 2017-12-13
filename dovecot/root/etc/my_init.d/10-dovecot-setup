@@ -78,7 +78,6 @@ doveadm_password = $dovecot_doveadm_password
 
 plugin {
   $([ -n "$dovecot_mail_replica" ] || echo -n "#")mail_replica = tcps:$dovecot_mail_replica
-  replica_sync_timeout = 2s
 }
 
 service aggregator {
