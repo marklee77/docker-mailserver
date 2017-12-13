@@ -10,6 +10,10 @@ services:
     configs:
       - source: ssl_ca_cert
         target: /etc/ssl/postfix/ca.crt
+    volumes:
+      - type: volume
+        source: postfix
+        target: /data
     environment:
       postfix_fqdn: mail.fakedomain.test
       postfix_ldap_password: password
@@ -33,6 +37,10 @@ services:
       - source: dovecot_ssl_key
         target: /etc/ssl/dovecot/server.key
         mode: 0400
+    volumes:
+      - type: volume
+        source: dovecot
+        target: /data
     environment:
       dovecot_ldap_password: password
       dovecot_ssl_dh_parameters_length: "1024"
@@ -55,6 +63,10 @@ services:
       - source: replica_ssl_key
         target: /etc/ssl/dovecot/server.key
         mode: 0400
+    volumes:
+      - type: volume
+        source: replica
+        target: /data
     environment:
       dovecot_ldap_password: password
       dovecot_ssl_dh_parameters_length: "1024"
@@ -87,6 +99,10 @@ services:
         uid: '200'
         gid: '200'
         mode: 0440
+    volumes:
+      - type: volume
+        source: ldap
+        target: /data
     environment:
       fusiondirectory_admin_password: password
       slapd_admin_password: password
@@ -110,3 +126,9 @@ secrets:
     file: ./ssl/private/dovecot.key.pem
   replica_ssl_key:
     file: ./ssl/private/replica.key.pem
+
+volumes:
+  postfix:
+  dovecot:
+  replica:
+  ldap:
