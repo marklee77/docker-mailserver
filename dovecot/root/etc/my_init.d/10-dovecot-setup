@@ -67,18 +67,158 @@ iterate_attrs = uid=user
 iterate_filter = (objectClass=gosaMailAccount)
 EOF
 
-cat > "$(mypath /etc/dovecot/conf.d/replica.conf)" <<EOF
+cat > "$(mypath /etc/dovecot/secrets.conf)" <<EOF
+doveadm_password = $dovecot_doveadm_password
+EOF
+
+# set normal umask
+umask 0022
+
+cat > "$(mypath /etc/dovecot/dovecot.conf)" <<EOF
+
+!include_try /etc/dovecot/secrets.conf
+
+auth_mechanisms = plain login
+auth_username_format = %Lu
+disable_plaintext_auth = yes
+
+ssl = $dovecot_ssl
+ssl_protocols = !SSLv2 !SSLv3
+ssl_cipher_list = $(openssl_ciphers)
+ssl_prefer_server_ciphers = yes
+ssl_options = no_compression
+ssl_dh_parameters_length = $dovecot_ssl_dh_parameters_length
+ssl_cert = <$dovecot_ssl_cert_file
+ssl_key = <$dovecot_ssl_key_file
+
 # not a typo, apparently no < for this param
 ssl_client_ca_file = $dovecot_ssl_client_ca_file
 
-mail_plugins = \$mail_plugins notify replication
+passdb {
+  driver = ldap
+  args = /etc/dovecot/dovecot-ldap-passdb.conf.ext
+}
 
-doveadm_port = 9027
-doveadm_password = $dovecot_doveadm_password
+userdb {
+  driver = ldap
+  args = /etc/dovecot/dovecot-ldap-userdb.conf.ext
+}
+
+mail_uid = vmail
+mail_gid = vmail
+mail_home = /var/lib/vmail/%u
+mail_location = maildir:~/Maildir
+mail_plugins = fts fts_solr notify quota replication
+
+namespace inbox {
+  inbox = yes
+  location =
+  prefix =
+  mailbox Archive {
+    auto = subscribe
+    special_use = \Archive
+  }
+  mailbox Drafts {
+    auto = subscribe
+    special_use = \Drafts
+  }
+  mailbox Sent {
+    auto = subscribe
+    special_use = \Sent
+  }
+  mailbox Spam {
+    auto = create
+    special_use = \Junk
+  }
+  mailbox Trash {
+    auto = create
+    special_use = \Trash
+  }
+}
 
 plugin {
+  fts_autoindex = yes
+  fts = solr
+  fts_solr = break-imap-search url=http://solr:8983/solr/dovecot/
+  fts_tika = http://tika:9998/tika/
+  sieve = file:~/sieve.d;active=~/dovecot.sieve
+  sieve_max_script_size = 1M
+  sieve_max_actions = 256
+  sieve_default = /var/lib/dovecot/default.sieve
+  sieve_default_name = default
   $([ -n "$dovecot_mail_replica" ] || echo -n "#")mail_replica = tcps:$dovecot_mail_replica
 }
+
+protocols = lmtp imap pop3 sieve
+
+# authentication
+################
+
+service auth {
+  inet_listener {
+    port = 8100
+  }
+
+  unix_listener auth-userdb {
+    group = vmail
+  }
+}
+
+# lmtp
+######
+
+service lmtp {
+  user = vmail
+  inet_listener lmtp {
+    port = 8025
+  }
+}
+
+protocol lmtp {
+  deliver_log_format = msgid=%m: %$
+  mail_plugins = \$mail_plugins sieve
+  postmaster_address = postmaster
+  quota_full_tempfail = yes
+  rejection_reason = Your message to <%t> was automatically rejected:%n%r
+}
+
+# imap
+######
+
+service imap-login {
+  inet_listener imaps {
+    # disable the imaps service
+    port = 0
+  }
+}
+
+protocol imap {
+  imap_client_workarounds = delay-newmail
+  mail_max_userip_connections = 10
+  mail_plugins = \$mail_plugins imap_quota
+  ssl_cert = <$dovecot_imap_ssl_cert_file
+  ssl_key = <$dovecot_imap_ssl_key_file
+}
+
+# pop3
+######
+
+service pop3-login {
+  inet_listener pop3s {
+    # disable the pop3s service
+    port = 0
+  }
+}
+
+protocol pop3 {
+  pop3_client_workarounds = outlook-no-nuls oe-ns-eoh
+  mail_max_userip_connections = 10
+  ssl_cert = <$dovecot_pop3_ssl_cert_file
+  ssl_key = <$dovecot_pop3_ssl_key_file
+}
+
+# replication
+#############
 
 service aggregator {
   fifo_listener replication-notify-fifo {
@@ -97,53 +237,21 @@ service replicator {
   }
 }
 
+# doveadm (needed for replication)
+##################################
+
+# client port
+doveadm_port = 9027
+
 service doveadm {
   inet_listener {
     port = 9027
     ssl = yes
   }
 }
-EOF
 
-# set normal umask
-umask 0022
-
-cat > "$(mypath /etc/dovecot/conf.d/ssl.conf)" <<EOF
-ssl = $dovecot_ssl
-ssl_protocols = !SSLv2 !SSLv3
-ssl_cipher_list = $(openssl_ciphers)
-ssl_prefer_server_ciphers = yes
-ssl_options = no_compression
-ssl_dh_parameters_length = $dovecot_ssl_dh_parameters_length
-ssl_cert = <$dovecot_ssl_cert_file
-ssl_key = <$dovecot_ssl_key_file
-EOF
-
-cat > "$(mypath /etc/dovecot/conf.d/protocols.conf)" <<EOF
-protocols = lmtp imap pop3 sieve
-
-protocol lmtp {
-  deliver_log_format = msgid=%m: %$
-  mail_plugins = \$mail_plugins quota sieve
-  postmaster_address = postmaster
-  quota_full_tempfail = yes
-  rejection_reason = Your message to <%t> was automatically rejected:%n%r
-}
-
-protocol imap {
-  imap_client_workarounds = delay-newmail
-  mail_max_userip_connections = 10
-  mail_plugins = \$mail_plugins fts fts_solr
-  ssl_cert = <$dovecot_imap_ssl_cert_file
-  ssl_key = <$dovecot_imap_ssl_key_file
-}
-
-protocol pop3 {
-  pop3_client_workarounds = outlook-no-nuls oe-ns-eoh
-  mail_max_userip_connections = 10
-  ssl_cert = <$dovecot_pop3_ssl_cert_file
-  ssl_key = <$dovecot_pop3_ssl_key_file
-}
+# managesieve
+#############
 
 protocol sieve {
   ssl_cert = <$dovecot_sieve_ssl_cert_file
