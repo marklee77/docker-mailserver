@@ -15,6 +15,7 @@ RUN mkdir -p /tmp/run && \
         dovecot-solr \
         pwgen && \
     rm -rf \
+        /etc/ldap/ldap.conf \
         /var/cache/apt/* \
         /var/lib/apt/lists/*
 
@@ -28,12 +29,14 @@ RUN groupadd -g 1000 vmail && \
     ln -s /data/dovecot/ssl/server.crt /etc/ssl/dovecot/server.crt && \
     ln -s /data/dovecot/ssl/server.key /etc/ssl/dovecot/server.key && \
     rm -rf /etc/dovecot/* && \
-    ln -s /data/dovecot/config/dovecot.conf /etc/dovecot/dovecot.conf && \
-    ln -s /data/dovecot/config/secrets.conf /etc/dovecot/secrets.conf && \
-    ln -s /data/dovecot/config/dovecot-ldap.conf.ext \
+    ln -s /data/dovecot/config/dovecot/dovecot.conf /etc/dovecot/dovecot.conf && \
+    ln -s /data/dovecot/config/dovecot/secrets.conf /etc/dovecot/secrets.conf && \
+    ln -s /data/dovecot/config/dovecot/dovecot-ldap.conf.ext \
           /etc/dovecot/dovecot-ldap.conf.ext && \
     ln -s dovecot-ldap.conf.ext /etc/dovecot/dovecot-ldap-passdb.conf.ext && \
     ln -s dovecot-ldap.conf.ext /etc/dovecot/dovecot-ldap-userdb.conf.ext && \
+    ln -s /data/dovecot/config/ldap/ldap.passwd /etc/ldap/ldap.passwd && \
+    ln -s /data/dovecot/config/ldap/ldap.conf /etc/ldap/ldap.conf && \
     ln -s /data/dovecot/vmail /var/lib/vmail
 
 COPY root/etc/cron.d/dovecot /etc/cron.d/
