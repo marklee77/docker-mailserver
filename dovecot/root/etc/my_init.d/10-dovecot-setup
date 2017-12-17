@@ -29,7 +29,6 @@
 : ${dovecot_ldap_tls_ca_cert_file:=$dovecot_ssl_ca_cert_file}
 : ${dovecot_ldap_tls_require_cert:=hard}
 : ${dovecot_ldap_basedn:=dc=ldap,dc=dit}
-: ${dovecot_ldap_password:=password}
 
 # set secure umask
 umask 027
@@ -47,6 +46,13 @@ fi
 dir="$(mypath /var/lib/vmail)"
 mkdir -m 0770 -p "$dir"
 chown vmail:vmail "$dir"
+
+file="$(mypath /etc/ldap/ldap.passwd)"
+if [ -f "$file" ]; then
+    dovecot_ldap_password="$(cat "$file")"
+else
+    echo -n "$dovecot_ldap_password" > "$file"
+fi
 
 cat > "$(mypath /etc/dovecot/dovecot-ldap.conf.ext)" <<EOF
 uris = $dovecot_ldap_url
@@ -66,6 +72,9 @@ user_filter = (&(objectClass=gosaMailAccount)(|(uid=%u)(mail=%u)))
 iterate_attrs = uid=user
 iterate_filter = (objectClass=gosaMailAccount)
 EOF
+
+file=/run/secrets/dovecot_doveadm_password
+[ -f "$file" ] && dovecot_doveadm_password="$(cat "$file")"
 
 cat > "$(mypath /etc/dovecot/secrets.conf)" <<EOF
 doveadm_password = $dovecot_doveadm_password

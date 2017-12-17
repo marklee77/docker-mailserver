@@ -12,7 +12,6 @@
 : ${postfix_ldap_tls_ca_cert_file:=$postfix_ssl_ca_cert_file}
 : ${postfix_ldap_tls_require_cert:=yes}
 : ${postfix_ldap_basedn:=dc=ldap,dc=dit}
-: ${postfix_ldap_password:=password}
 
 # default maximum is 100M
 : ${postfix_message_size_limit:=104857600}
