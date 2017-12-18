@@ -4,6 +4,7 @@ LABEL maintainer="Mark Stillwell <mark@stillwell.me>"
 RUN mkdir -p /tmp/run && \
     apt-get update && \
     apt-get -y install --no-install-recommends \
+        ca-certificates \
         iproute2 \
         postfix \
         postfix-ldap \
