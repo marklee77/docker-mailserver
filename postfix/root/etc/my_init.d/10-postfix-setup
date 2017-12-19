@@ -302,7 +302,6 @@ postscreen_greet_action = enforce
 smtpd_recipient_restrictions =
     permit_mynetworks,
     reject_unauth_pipelining,
-    reject_unknown_client_hostname,
     reject_invalid_helo_hostname,
     reject_non_fqdn_helo_hostname,
     reject_unknown_helo_hostname,
