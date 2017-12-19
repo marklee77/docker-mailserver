@@ -13,13 +13,13 @@
 : ${postfix_ldap_tls_require_cert:=yes}
 : ${postfix_ldap_basedn:=dc=ldap,dc=dit}
 
+: ${postfix_mynetworks:=127.0.0.1/8}
+
 # default maximum is 100M
 : ${postfix_message_size_limit:=104857600}
 
 : ${postfix_internal_milters:=}
 : ${postfix_external_milters:=}
-
-docker_network=$(ip a s eth0 | sed -n '/^\s*inet \([^ ]*\).*/{s//\1/p;q}')
 
 # set secure umask
 umask 027
@@ -247,7 +247,7 @@ virtual_alias_maps = proxy:ldap:/etc/postfix/conf.d/ldap-alias-distributions.cf,
 
 # TRUST AND RELAY CONTROL
 
-mynetworks = 127.0.0.0/8 $docker_network
+mynetworks = $postfix_mynetworks
 relay_domains =
 
 # TLS parameters
