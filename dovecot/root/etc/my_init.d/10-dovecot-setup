@@ -152,7 +152,7 @@ plugin {
   fts_autoindex = yes
   fts = solr
   fts_solr = break-imap-search url=http://solr:8983/solr/dovecot/
-  fts_tika = http://tika:9998/tika/
+  #fts_tika = http://tika:9998/tika/
   sieve = file:~/sieve.d;active=~/dovecot.sieve
   sieve_max_script_size = 1M
   sieve_max_actions = 256
