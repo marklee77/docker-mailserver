@@ -1,4 +1,4 @@
-FROM solr
+FROM solr:6
 LABEL maintainer="Mark Stillwell <mark@stillwell.me>"
 
 USER root
