@@ -1,4 +1,4 @@
-FROM solr:alpine
+FROM solr
 LABEL maintainer="Mark Stillwell <mark@stillwell.me>"
 
 USER root
