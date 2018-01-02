@@ -1,10 +1,17 @@
-FROM marklee77/supervisor:stretch
+FROM marklee77/supervisor:xenial
 LABEL maintainer="Mark Stillwell <mark@stillwell.me>"
 
 RUN mkdir -p /tmp/run && \
     apt-get update && \
     apt-get -y install --no-install-recommends \
-        curl \
+        apt-transport-https \
+        ca-certificates \
+        curl && \
+    curl https://repo.dovecot.org/DOVECOT-REPO-GPG | apt-key add - && \
+    echo "deb https://repo.dovecot.org/ce-2.3-latest/ubuntu/xenial xenial main" > \
+        /etc/apt/sources.list.d/dovecot.list && \
+    apt-get update && \
+    apt-get -y install --no-install-recommends \
         dovecot-core \
         dovecot-imapd \
         dovecot-ldap \
