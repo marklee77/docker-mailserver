@@ -125,6 +125,9 @@ ssl_dh_parameters_length = $dovecot_ssl_dh_parameters_length
 ssl_cert = <$dovecot_internal_ssl_cert_file
 ssl_key = <$dovecot_internal_ssl_key_file
 
+# not a typo, apparently no < for this param
+ssl_client_ca_file = $dovecot_ssl_client_ca_file
+
 !include_try /etc/dovecot/secrets.conf
 !include_try /etc/dovecot/replication.conf
 !include_try /etc/dovecot/search.conf
@@ -132,9 +135,6 @@ ssl_key = <$dovecot_internal_ssl_key_file
 auth_mechanisms = plain login
 auth_username_format = %Lu
 disable_plaintext_auth = yes
-
-# not a typo, apparently no < for this param
-ssl_client_ca_file = $dovecot_ssl_client_ca_file
 
 passdb {
   driver = ldap
