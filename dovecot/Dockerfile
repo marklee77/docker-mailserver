@@ -1,55 +1,27 @@
-FROM marklee77/supervisor:xenial
+FROM marklee77/supervisor:alpine
 LABEL maintainer="Mark Stillwell <mark@stillwell.me>"
 
-RUN mkdir -p /tmp/run && \
-    apt-get update && \
-    apt-get -y install --no-install-recommends \
-        apt-transport-https \
-        ca-certificates \
-        curl && \
-    curl https://repo.dovecot.org/DOVECOT-REPO-GPG | apt-key add - && \
-    echo "deb https://repo.dovecot.org/ce-2.3-latest/ubuntu/xenial xenial main" > \
-        /etc/apt/sources.list.d/dovecot.list && \
-    apt-get update && \
-    apt-get -y install --no-install-recommends \
-        dovecot-core \
-        dovecot-imapd \
+RUN apk add --update-cache --no-cache \
+        curl \
+        dovecot \
+        dovecot-fts-solr \
         dovecot-ldap \
-        dovecot-lmtpd \
-        dovecot-managesieved \
-        dovecot-pop3d \
-        dovecot-sieve \
-        dovecot-solr \
+        dovecot-pigeonhole-plugin \
         pwgen && \
     rm -rf \
-        /etc/ldap/ldap.conf \
-        /var/cache/apt/* \
-        /var/lib/apt/lists/*
-
-COPY root/var/lib/dovecot/default.sieve /var/lib/dovecot/
-RUN chmod 0644 /var/lib/dovecot/default.sieve && \
-    sievec /var/lib/dovecot/default.sieve
-
-RUN groupadd -g 1000 vmail && \
-    useradd -g 1000 -u 1000 -d /var/lib/vmail -s /bin/false vmail && \
-    mkdir -m 0755 -p /etc/ssl/dovecot && \
-    ln -s /data/dovecot/ssl/server.crt /etc/ssl/dovecot/server.crt && \
-    ln -s /data/dovecot/ssl/server.key /etc/ssl/dovecot/server.key && \
-    rm -rf /etc/dovecot/* && \
-    ln -s /data/dovecot/config/dovecot/dovecot.conf /etc/dovecot/dovecot.conf && \
-    ln -s /data/dovecot/config/dovecot/secrets.conf /etc/dovecot/secrets.conf && \
-    ln -s /data/dovecot/config/dovecot/dovecot-ldap.conf.ext \
-          /etc/dovecot/dovecot-ldap.conf.ext && \
+        /etc/dovecot/* \
+        /etc/ssl/dovecot/* \
+        /var/cache/apk/* && \
     ln -s dovecot-ldap.conf.ext /etc/dovecot/dovecot-ldap-passdb.conf.ext && \
     ln -s dovecot-ldap.conf.ext /etc/dovecot/dovecot-ldap-userdb.conf.ext && \
-    ln -s /data/dovecot/config/ldap/ldap.passwd /etc/ldap/ldap.passwd && \
-    ln -s /data/dovecot/config/ldap/ldap.conf /etc/ldap/ldap.conf && \
-    ln -s /data/dovecot/vmail /var/lib/vmail
+    adduser -u 1000 -h /var/lib/vmail -s /bin/false -D vmail
 
-COPY root/etc/cron.d/dovecot /etc/cron.d/
-RUN chmod 0644 /etc/cron.d/dovecot
-COPY root/etc/cron.daily/dovecot /etc/cron.daily/
-RUN chmod 0755 /etc/cron.daily/dovecot
+COPY root/etc/dovecot/default.sieve /etc/dovecot/
+RUN chmod 0644 /etc/dovecot/default.sieve
+
+COPY root/etc/periodic/15min/dovecot /etc/periodic/15min/
+COPY root/etc/periodic/daily/dovecot /etc/periodic/daily/
+RUN chmod 0755 /etc/periodic/*/dovecot
 
 COPY root/etc/my_init.d/10-dovecot-setup /etc/my_init.d/
 RUN chmod 0755 /etc/my_init.d/10-dovecot-setup

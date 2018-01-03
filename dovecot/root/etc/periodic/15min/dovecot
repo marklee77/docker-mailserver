@@ -1,0 +1,2 @@
+#!/bin/sh
+curl 'http://solr:8983/solr/dovecot/update?commit=true' >/dev/null 2>&1

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 . /usr/local/share/my_init/functions.sh
 
 : ${dovecot_ssl:=required}
@@ -24,21 +24,22 @@
 : ${dovecot_sieve_ssl_cert_file:=$dovecot_external_ssl_cert_file}
 : ${dovecot_sieve_ssl_key_file:=$dovecot_external_ssl_key_file}
 
-: ${dovecot_mail_replica:=}
-: ${dovecot_doveadm_password:=$(pwgen -s1 32)}
-
 : ${dovecot_ldap_url:=ldap://ldap}
 : ${dovecot_ldap_tls:=yes}
 : ${dovecot_ldap_tls_ca_cert_file:=$dovecot_ssl_ca_cert_file}
 : ${dovecot_ldap_tls_require_cert:=hard}
 : ${dovecot_ldap_basedn:=dc=ldap,dc=dit}
 
+: ${dovecot_mail_replica:=}
+: ${dovecot_doveadm_password:=$(pwgen -s1 32)}
+
+: ${dovecot_fts_solr_url:=http://solr:8983/solr/dovecot/}
+: ${dovecot_fts_tika_url:=http://tika:9998/tika/}
+
+
 # set secure umask
 umask 027
 
-for var in dovecot_ssl_cert_file dovecot_ssl_key_file; do
-    eval "$var=\"\$(mypath \$$var)\""
-done
 if ! [ -f "$dovecot_ssl_cert_file" ]; then
     openssl req -newkey rsa:2048 -x509 -nodes -days 365 \
         -subj "/CN=$(hostname)" \
@@ -46,18 +47,10 @@ if ! [ -f "$dovecot_ssl_cert_file" ]; then
     chmod 0644 "$dovecot_ssl_cert_file"
 fi
 
-dir="$(mypath /var/lib/vmail)"
-mkdir -m 0770 -p "$dir"
-chown vmail:vmail "$dir"
+file=/run/secrets/dovecot_ldap_password
+[ -f "$file" ] && dovecot_ldap_password="$(cat "$file")"
 
-file="$(mypath /etc/ldap/ldap.passwd)"
-if [ -f "$file" ]; then
-    dovecot_ldap_password="$(cat "$file")"
-else
-    echo -n "$dovecot_ldap_password" > "$file"
-fi
-
-cat > "$(mypath /etc/dovecot/dovecot-ldap.conf.ext)" <<EOF
+cat >/etc/dovecot/dovecot-ldap.conf.ext <<EOF
 uris = $dovecot_ldap_url
 ldap_version = 3
 tls = $dovecot_ldap_tls
@@ -79,21 +72,50 @@ EOF
 file=/run/secrets/dovecot_doveadm_password
 [ -f "$file" ] && dovecot_doveadm_password="$(cat "$file")"
 
-cat > "$(mypath /etc/dovecot/secrets.conf)" <<EOF
+cat >/etc/dovecot/secrets.conf <<EOF
 doveadm_password = $dovecot_doveadm_password
 EOF
 
 # set normal umask
-umask 0022
+umask 022
 
-cat > "$(mypath /etc/dovecot/dovecot.conf)" <<EOF
+[ -n "$dovecot_mail_replica" ] && cat >/etc/dovecot/replication.conf <<EOF
+mail_plugins = \$mail_plugins replication
 
-!include_try /etc/dovecot/secrets.conf
+plugin {
+  mail_replica = tcps:$dovecot_mail_replica
+}
 
-auth_mechanisms = plain login
-auth_username_format = %Lu
-disable_plaintext_auth = yes
+service aggregator {
+  fifo_listener replication-notify-fifo {
+    user = vmail
+  }
+  unix_listener replication-notify {
+    user = vmail
+  }
+}
 
+service replicator {
+  process_min_avail = 1
+  unix_listener replicator-doveadm {
+    mode = 0660
+    group = vmail
+  }
+}
+EOF
+
+[ -n "$dovecot_fts_solr_url" ] && cat >/etc/dovecot/search.conf <<EOF
+mail_plugins = \$mail_plugins fts fts_solr
+
+plugin {
+  fts_autoindex = yes
+  fts = solr
+  fts_solr = url=$dovecot_fts_solr_url
+  #fts_tika = $dovecot_fts_tika_url
+}
+EOF
+
+cat >/etc/dovecot/dovecot.conf <<EOF
 ssl = $dovecot_ssl
 ssl_protocols = !SSLv2 !SSLv3
 ssl_cipher_list = $(openssl_ciphers)
@@ -102,6 +124,14 @@ ssl_options = no_compression
 ssl_dh_parameters_length = $dovecot_ssl_dh_parameters_length
 ssl_cert = <$dovecot_internal_ssl_cert_file
 ssl_key = <$dovecot_internal_ssl_key_file
+
+!include_try /etc/dovecot/secrets.conf
+!include_try /etc/dovecot/replication.conf
+!include_try /etc/dovecot/search.conf
+
+auth_mechanisms = plain login
+auth_username_format = %Lu
+disable_plaintext_auth = yes
 
 # not a typo, apparently no < for this param
 ssl_client_ca_file = $dovecot_ssl_client_ca_file
@@ -120,7 +150,7 @@ mail_uid = vmail
 mail_gid = vmail
 mail_home = /var/lib/vmail/%u
 mail_location = mdbox:~/mdbox
-mail_plugins = fts fts_solr notify quota replication
+mail_plugins = \$mail_plugins notify quota
 
 namespace inbox {
   inbox = yes
@@ -149,16 +179,11 @@ namespace inbox {
 }
 
 plugin {
-  fts_autoindex = yes
-  fts = solr
-  fts_solr = break-imap-search url=http://solr:8983/solr/dovecot/
-  #fts_tika = http://tika:9998/tika/
   sieve = file:~/sieve.d;active=~/dovecot.sieve
   sieve_max_script_size = 1M
   sieve_max_actions = 256
   sieve_default = /var/lib/dovecot/default.sieve
   sieve_default_name = default
-  $([ -n "$dovecot_mail_replica" ] || echo -n "#")mail_replica = tcps:$dovecot_mail_replica
 }
 
 protocols = lmtp imap pop3 sieve
@@ -229,26 +254,6 @@ protocol pop3 {
   ssl_key = <$dovecot_pop3_ssl_key_file
 }
 
-# replication
-#############
-
-service aggregator {
-  fifo_listener replication-notify-fifo {
-    user = vmail
-  }
-  unix_listener replication-notify {
-    user = vmail
-  }
-}
-
-service replicator {
-  process_min_avail = 1
-  unix_listener replicator-doveadm {
-    mode = 0660
-    group = vmail
-  }
-}
-
 # doveadm (needed for replication)
 ##################################
 
@@ -270,3 +275,5 @@ protocol sieve {
   ssl_key = <$dovecot_sieve_ssl_key_file
 }
 EOF
+
+sievec /etc/dovecot/default.sieve

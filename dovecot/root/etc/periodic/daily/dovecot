@@ -1,5 +1,5 @@
-#!/bin/bash
-curl "http://solr:8983/solr/dovecot/update?optimize=true" &>/dev/null
+#!/bin/sh
+curl 'http://solr:8983/solr/dovecot/update?optimize=true' >/dev/null 2>&1
 doveadm move -A Archive mailbox Sent savedbefore 7d
 doveadm expunge -A mailbox Spam savedbefore 60d
 doveadm expunge -A mailbox Trash savedbefore 60d
