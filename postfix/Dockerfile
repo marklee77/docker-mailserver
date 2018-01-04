@@ -1,36 +1,16 @@
-FROM marklee77/supervisor:xenial
+FROM marklee77/supervisor:alpine
 LABEL maintainer="Mark Stillwell <mark@stillwell.me>"
 
-RUN mkdir -p /tmp/run && \
-    apt-get update && \
-    apt-get -y install --no-install-recommends \
-        ca-certificates \
-        postfix \
-        postfix-ldap \
-        postfix-pcre && \
-    rm -rf \
-        /etc/aliases* \
-        /etc/ldap/ldap.conf \
-        /etc/mailname \
-        /etc/postfix/*.proto \
-        /etc/postfix/main.cf \
-        /etc/postfix/master.cf \
-        /var/cache/apt/* \
-        /var/lib/apt/lists/*
-
-RUN mkdir -m 0755 -p /etc/ssl/postfix && \
-    ln -s /data/postfix/ssl/server.crt /etc/ssl/postfix/server.crt && \
-    ln -s /data/postfix/ssl/server.key /etc/ssl/postfix/server.key && \
-    ln -s /data/postfix/config/mailname /etc/mailname && \
-    ln -s /data/postfix/config/postfix/master.cf /etc/postfix/master.cf && \
-    ln -s /data/postfix/config/postfix/main.cf /etc/postfix/main.cf && \
-    ln -s /data/postfix/config/postfix/conf.d /etc/postfix/conf.d && \
-    ln -s /data/postfix/config/ldap/ldap.passwd /etc/ldap/ldap.passwd && \
-    ln -s /data/postfix/config/ldap/ldap.conf /etc/ldap/ldap.conf
+RUN apk update && \
+    apk del ssmtp && \
+    apk add ca-certificates postfix && \
+    rm -rf /etc/postfix/* && \
+    apk add postfix-ldap && \
+    rm -rf /var/cache/apk/* && \
+    mkdir -m 0755 /etc/postfix/conf.d /etc/ssl/postfix
 
 COPY root/etc/my_init.d/10-postfix-setup /etc/my_init.d/
-COPY root/usr/local/sbin/postfix-run /usr/local/sbin/
-RUN chmod 0755 /etc/my_init.d/10-postfix-setup /usr/local/sbin/postfix-run
+RUN chmod 0755 /etc/my_init.d/10-postfix-setup
 
 COPY root/etc/supervisor/conf.d/postfix.conf /etc/supervisor/conf.d/
 RUN chmod 0644 /etc/supervisor/conf.d/postfix.conf
