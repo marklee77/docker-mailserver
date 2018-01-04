@@ -18,9 +18,8 @@ RUN apk add --update-cache --no-cache \
 COPY root/etc/dovecot/default.sieve /etc/dovecot/
 RUN chmod 0644 /etc/dovecot/default.sieve
 
-COPY root/etc/periodic/15min/dovecot /etc/periodic/15min/
-COPY root/etc/periodic/daily/dovecot /etc/periodic/daily/
-RUN chmod 0755 /etc/periodic/*/dovecot
+COPY root/etc/periodic/daily/dovecot-tidy-mailboxes /etc/periodic/daily/
+RUN chmod 0755 /etc/periodic/daily/dovecot-tidy-mailboxes
 
 COPY root/etc/my_init.d/10-dovecot-setup /etc/my_init.d/
 RUN chmod 0755 /etc/my_init.d/10-dovecot-setup

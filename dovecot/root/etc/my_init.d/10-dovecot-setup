@@ -31,24 +31,18 @@
 : ${dovecot_ldap_basedn:=dc=ldap,dc=dit}
 
 : ${dovecot_mail_replica:=}
-: ${dovecot_doveadm_password:=}
 
-: ${dovecot_fts_solr_url:=http://solr:8983/solr/dovecot/}
-: ${dovecot_fts_tika_url:=http://tika:9998/tika/}
-
-
-# set secure umask
-umask 027
-
-if ! [ -f "$dovecot_ssl_cert_file" ]; then
-    openssl req -newkey rsa:2048 -x509 -nodes -days 365 \
-        -subj "/CN=$(hostname)" \
-        -out "$dovecot_ssl_cert_file" -keyout "$dovecot_ssl_key_file"
-    chmod 0644 "$dovecot_ssl_cert_file"
-fi
+: ${dovecot_fts_solr_url:=http://solr:8983/solr/dovecot}
+: ${dovecot_fts_tika_url:=http://tika:9998/tika}
 
 file=/run/secrets/dovecot_ldap_password
 [ -f "$file" ] && dovecot_ldap_password="$(cat "$file")"
+
+file=/run/secrets/dovecot_doveadm_password
+[ -f "$file" ] && dovecot_doveadm_password="$(cat "$file")"
+
+# set secure umask
+umask 027
 
 cat >/etc/dovecot/dovecot-ldap.conf.ext <<EOF
 uris = $dovecot_ldap_url
@@ -68,9 +62,6 @@ user_filter = (&(objectClass=gosaMailAccount)(|(uid=%u)(mail=%u)))
 iterate_attrs = uid=user
 iterate_filter = (objectClass=gosaMailAccount)
 EOF
-
-file=/run/secrets/dovecot_doveadm_password
-[ -f "$file" ] && dovecot_doveadm_password="$(cat "$file")"
 
 [ -n "$dovecot_doveadm_password" ] && cat >/etc/dovecot/secrets.conf <<EOF
 doveadm_password = $dovecot_doveadm_password
@@ -101,17 +92,6 @@ service replicator {
     mode = 0660
     group = vmail
   }
-}
-EOF
-
-[ -n "$dovecot_fts_solr_url" ] && cat >/etc/dovecot/search.conf <<EOF
-mail_plugins = \$mail_plugins fts fts_solr
-
-plugin {
-  fts_autoindex = yes
-  fts = solr
-  fts_solr = url=$dovecot_fts_solr_url
-  #fts_tika = $dovecot_fts_tika_url
 }
 EOF
 
@@ -277,3 +257,28 @@ protocol sieve {
 EOF
 
 sievec /etc/dovecot/default.sieve
+
+[ -n "$dovecot_fts_solr_url" ] || exit 0
+
+cat >/etc/dovecot/search.conf <<EOF
+mail_plugins = \$mail_plugins fts fts_solr
+
+plugin {
+  fts_autoindex = yes
+  fts = solr
+  fts_solr = url=$dovecot_fts_solr_url/
+  fts_tika = $dovecot_fts_tika_url/
+}
+EOF
+
+cat >/etc/periodic/15min/dovecot-solr-commit <<EOF
+#!/bin/sh
+curl '$dovecot_fts_solr_url/update?commit=true' >/dev/null 2>&1
+EOF
+chmod 0755 /etc/periodic/15min/dovecot-solr-commit
+
+cat >/etc/periodic/daily/dovecot-solr-optimize <<EOF
+#!/bin/sh
+curl '$dovecot_fts_solr_url/update?optimize=true' >/dev/null 2>&1
+EOF
+chmod 0755 /etc/periodic/daily/dovecot-solr-optimize
