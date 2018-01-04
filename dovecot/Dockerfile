@@ -28,3 +28,5 @@ COPY root/etc/supervisor/conf.d/dovecot.conf /etc/supervisor/conf.d
 RUN chmod 0644 /etc/supervisor/conf.d/dovecot.conf
 
 EXPOSE 110 143 4190 8025 8100 9027
+
+VOLUME ["/var/lib/vmail"]
