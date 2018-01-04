@@ -1,8 +1,7 @@
-- sigh, next try alpine version (2.2.33.2...)
-- just move to using tini init and busyboxy-syslogd
-- clean up maildir...
-  - make sure encodings are correct, strip out invalid chars...
-- want generated dh parameters on volume for dovecot
+- make sure dovecot/postfix follow ssl best practice
+- generated dh parameters secret for dovecot -- use standard?
+- make sure both are using recommended elliptic curves
+- disable tickets, limit sessions
 - fix up dovecot config, simplify image!!!
 - disable fail2ban and point nessus at it...
 - think about how to wire up fail2ban w/ dovecot/postfix
