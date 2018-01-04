@@ -1,3 +1,7 @@
+- either postfix setup needs to copy in some files for /etc or chroot needs to
+  be disabled
+- dovecot sieve does not seem to be working currently
+
 - make sure dovecot/postfix follow ssl best practice
 - generated dh parameters secret for dovecot -- use standard?
 - make sure both are using recommended elliptic curves
