@@ -31,7 +31,7 @@
 : ${dovecot_ldap_basedn:=dc=ldap,dc=dit}
 
 : ${dovecot_mail_replica:=}
-: ${dovecot_doveadm_password:=$(pwgen -s1 32)}
+: ${dovecot_doveadm_password:=}
 
 : ${dovecot_fts_solr_url:=http://solr:8983/solr/dovecot/}
 : ${dovecot_fts_tika_url:=http://tika:9998/tika/}
@@ -72,7 +72,7 @@ EOF
 file=/run/secrets/dovecot_doveadm_password
 [ -f "$file" ] && dovecot_doveadm_password="$(cat "$file")"
 
-cat >/etc/dovecot/secrets.conf <<EOF
+[ -n "$dovecot_doveadm_password" ] && cat >/etc/dovecot/secrets.conf <<EOF
 doveadm_password = $dovecot_doveadm_password
 EOF
 

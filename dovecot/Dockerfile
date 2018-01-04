@@ -6,8 +6,7 @@ RUN apk add --update-cache --no-cache \
         dovecot \
         dovecot-fts-solr \
         dovecot-ldap \
-        dovecot-pigeonhole-plugin \
-        pwgen && \
+        dovecot-pigeonhole-plugin && \
     rm -rf \
         /etc/dovecot/* \
         /etc/ssl/dovecot/* \
