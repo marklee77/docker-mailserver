@@ -162,7 +162,7 @@ plugin {
   sieve = file:~/sieve.d;active=~/dovecot.sieve
   sieve_max_script_size = 1M
   sieve_max_actions = 256
-  sieve_default = /etc/dovecot/default.sieve
+  sieve_default = /var/lib/dovecot/default.sieve
   sieve_default_name = default
 }
 
@@ -256,7 +256,7 @@ protocol sieve {
 }
 EOF
 
-sievec /etc/dovecot/default.sieve
+sievec /var/lib/dovecot/default.sieve
 
 [ -n "$dovecot_fts_solr_url" ] || exit 0
 
