@@ -1,5 +1,3 @@
-- default.sieve should prob be in same place as ssl params
-
 - make sure dovecot/postfix follow ssl best practice
 - generated dh parameters secret for dovecot -- use standard?
 - make sure both are using recommended elliptic curves
