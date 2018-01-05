@@ -1,16 +1,6 @@
-- make sure dovecot/postfix follow ssl best practice
-- generated dh parameters secret for dovecot -- use standard?
-- make sure both are using recommended elliptic curves
-- disable tickets, limit sessions
-- fix up dovecot config, simplify image!!!
 - disable fail2ban and point nessus at it...
 - think about how to wire up fail2ban w/ dovecot/postfix
 - better way of extracting text from attachments
-- still tries to sync when no replica, so maybe a separate file for that...
-- https://imapwiki.org/ImapTest/
-- less logging for cron...
-
-- make sure solr is setting up things right, is a volume already defined?
 
 - temporarily pulling dkim, dmarc, postgrey, spf from postfix container,
   should run in own...
