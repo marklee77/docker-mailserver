@@ -16,11 +16,8 @@ RUN apk add --update-cache --no-cache \
     mkdir -m 0755 /var/lib/dovecot && \
     adduser -u 1000 -h /var/lib/vmail -s /bin/false -D vmail
 
-COPY root/var/lib/dovecot/default.sieve /var/lib/dovecot/
-RUN chmod 0644 /var/lib/dovecot/default.sieve
-
-COPY root/var/lib/dovecot/ffdhe4096.dat /var/lib/dovecot/ssl-parameters.dat
-RUN chmod 0644 /var/lib/dovecot/ssl-parameters.dat
+COPY root/etc/dovecot/default.sieve /etc/dovecot/
+RUN chmod 0644 /etc/dovecot/default.sieve
 
 COPY root/etc/periodic/daily/dovecot-tidy-mailboxes /etc/periodic/daily/
 RUN chmod 0755 /etc/periodic/daily/dovecot-tidy-mailboxes
@@ -33,4 +30,4 @@ RUN chmod 0644 /etc/supervisor/conf.d/dovecot.conf
 
 EXPOSE 110 143 4190 8025 8100 9027
 
-VOLUME ["/var/lib/vmail"]
+VOLUME ["/var/lib/dovecot", "/var/lib/vmail"]
