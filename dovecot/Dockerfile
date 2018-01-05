@@ -19,6 +19,10 @@ RUN apk add --update-cache --no-cache \
 COPY root/var/lib/dovecot/default.sieve /var/lib/dovecot/
 RUN chmod 0644 /var/lib/dovecot/default.sieve
 
+COPY root/var/lib/dovecot/ffdhe4096.dat /var/lib/dovecot/
+RUN chmod 0644 /var/lib/dovecot/ffdhe4096.dat && \
+    ln -s ffdhe4096.dat /var/lib/dovecot/ssl-parameters.dat
+
 COPY root/etc/periodic/daily/dovecot-tidy-mailboxes /etc/periodic/daily/
 RUN chmod 0755 /etc/periodic/daily/dovecot-tidy-mailboxes
 
