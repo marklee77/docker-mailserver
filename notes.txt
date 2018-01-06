@@ -2,16 +2,8 @@
 - think about how to wire up fail2ban w/ dovecot/postfix
 - better way of extracting text from attachments
 
-- temporarily pulling dkim, dmarc, postgrey, spf from postfix container,
-  should run in own...
-- look again at amavis, cluebringer
-
-- mail filtering
-  - greylisting with some whitelisting/blacklisting ability
-  - spf/dkim/dmarc
-  - clamav
-  - spamd
-  - blacklist and strip some headers
+- mailing list software (sympa?)
+- http://www.onyxbits.de/gnarwl/ ?
 
 - dovecot virtual folders All / Flagged
 - http://trimc-db.blogspot.co.uk/2015/04/apache-solr-and-docker-for-newbies.html
@@ -25,8 +17,6 @@
 - need a webmail solution with sieve support and calendar
 - dkim key rotation and generation hostname/date in selector
 
-- https://github.com/docker/labs/tree/master/Docker-Orchestration
-
 - user configurable encryption for mail at rest, with time limitations for
   search (e.g., keep mail forever, but only searchable online for 3 months)
-    - gpg-mailgate?
+- gpg-mailgate?
