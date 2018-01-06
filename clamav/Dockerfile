@@ -10,8 +10,9 @@ RUN apk add --update --no-cache \
          /etc/periodic/daily/logrotate \
         /var/cache/apk/*
 
-COPY --chown=100:101 root/etc/clamav/*.conf /etc/clamav/
-RUN chmod 0644 /etc/clamav/*.conf
+COPY root/etc/clamav/*.conf /etc/clamav/
+RUN chown clamav:clamav /etc/clamav/*.conf && \
+    chmod 0644 /etc/clamav/*.conf
 
 COPY root/etc/my_init.d/10-clamav-setup /etc/my_init.d/
 RUN chmod 0755 /etc/my_init.d/10-clamav-setup
