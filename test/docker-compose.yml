@@ -5,12 +5,14 @@ services:
     image: "127.0.0.1:5000/postfix"
     build: ../postfix
     depends_on:
+      - clamav
       - dovecot
       - ldap
     configs:
       - source: ssl_ca_cert
         target: /etc/ssl/postfix/ca.crt
     environment:
+      postfix_internal_milters: inet:clamav:1025
       postfix_fqdn: mail.fakedomain.test
       postfix_ldap_password: password
       postfix_ldap_tls_ca_cert_file: /etc/ssl/postfix/ca.crt
@@ -61,6 +63,14 @@ services:
       dovecot_ssl_ca_cert_file: /etc/ssl/dovecot/ca.crt
       dovecot_mail_replica: dovecot
       dovecot_doveadm_password: password
+
+  clamav:
+    image: "127.0.0.1:5000/clamav"
+    build: ../clamav
+    volumes:
+      - type: volume
+        source: clamav
+        target: /var/lib/clamav
 
   solr:
     image: "127.0.0.1:5000/solr-dovecot"
@@ -116,4 +126,5 @@ secrets:
     file: ./ssl/private/replica.key.pem
 
 volumes:
+  clamav:
   ldap:
