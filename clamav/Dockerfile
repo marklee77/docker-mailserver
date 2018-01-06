@@ -1,23 +1,24 @@
-FROM marklee77/supervisor:xenial
+FROM marklee77/supervisor:alpine
 MAINTAINER Mark Stillwell <mark@stillwell.me>
 
-ENV DEBIAN_FRONTEND noninteractive
-RUN apt-get update && \
-    apt-get -y install --no-install-recommends \
-        clamav-daemon \
-        clamav-freshclam \
-        clamav-milter && \
-    rm -rf /var/lib/apt/lists/* /var/cache/apt/*
+RUN apk add --update --no-cache \
+        clamav \
+        clamav-libunrar \
+        clamav-milter \
+        freshclam && \
+    rm -rf \
+         /etc/periodic/daily/logrotate \
+        /var/cache/apk/*
 
-COPY root/etc/clamav/*.conf /etc/clamav/
-RUN chown clamav:clamav /etc/clamav/*.conf && chmod 0644 /etc/clamav/*.conf
+COPY --chown=100:101 root/etc/clamav/*.conf /etc/clamav/
+RUN chmod 0644 /etc/clamav/*.conf
 
 COPY root/etc/my_init.d/10-clamav-setup /etc/my_init.d/
-RUN chmod 755 /etc/my_init.d/10-clamav-setup
+RUN chmod 0755 /etc/my_init.d/10-clamav-setup
 
 COPY root/etc/supervisor/conf.d/clamav.conf /etc/supervisor/conf.d/
-RUN chmod 644 /etc/supervisor/conf.d/clamav.conf
+RUN chmod 0644 /etc/supervisor/conf.d/clamav.conf
 
-VOLUME [ "/var/lib/clamav" ]
+VOLUME ["/var/lib/clamav"]
 
-EXPOSE 1234
+EXPOSE 1025
