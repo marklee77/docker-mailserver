@@ -9,6 +9,7 @@
 - http://trimc-db.blogspot.co.uk/2015/04/apache-solr-and-docker-for-newbies.html
 
 - compare against these, what's better, what's worse:
+    - https://github.com/mailcow/mailcow-dockerized
     - https://github.com/instrumentisto/docker-mailserver
     - https://rmohan.com/?p=6173
     - https://github.com/tomav/docker-mailserver
