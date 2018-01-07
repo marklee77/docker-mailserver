@@ -1,7 +1,7 @@
-require ["fileinto","copy"];
+require ["fileinto", "copy"];
 
 # rule:[spam]
-if anyof (header :is "X-Spam-Flag" "yes")
+if anyof (header :is "X-Spam" "Yes")
 {
     fileinto "Spam";
 }

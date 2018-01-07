@@ -1,0 +1,21 @@
+#!/bin/sh
+
+: ${rspamd_controller_secure_ip:=}
+: ${rspamd_controller_password:=}
+
+# set secure umask
+umask 277
+
+cat >/etc/rspamd/local.d/worker-controller.inc <<EOF
+secure_ip = "$rspamd_controller_secure_ip"
+password = "$rspamd_controller_password"
+bind_socket = "*:80"
+EOF
+chown rspamd:rspamd /etc/rspamd/local.d/worker-controller.inc
+
+cat >/etc/rspamd/local.d/worker-proxy.inc <<EOF
+secure_ip = "$rspamd_controller_secure_ip"
+password = "$rspamd_controller_password"
+bind_socket = "*:1025"
+EOF
+chown rspamd:rspamd /etc/rspamd/local.d/worker-proxy.inc
