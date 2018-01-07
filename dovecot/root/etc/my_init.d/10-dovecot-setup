@@ -188,10 +188,6 @@ service auth {
   }
 }
 
-service auth-worker {
-  user = vmail
-}
-
 # lmtp
 ######
 
