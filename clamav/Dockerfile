@@ -1,5 +1,5 @@
 FROM marklee77/supervisor:alpine
-MAINTAINER Mark Stillwell <mark@stillwell.me>
+LABEL mainteiner="Mark Stillwell <mark@stillwell.me>"
 
 RUN apk add --update --no-cache \
         clamav \
