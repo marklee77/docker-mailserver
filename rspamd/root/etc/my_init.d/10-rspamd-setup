@@ -13,6 +13,20 @@ bind_socket = "*:80"
 EOF
 chown rspamd:rspamd /etc/rspamd/local.d/worker-controller.inc
 
+# set normal umask
+umask 222
+
+cat >/etc/rspamd/local.d/logging.inc <<EOF
+type = "syslog"
+EOF
+chown rspamd:rspamd /etc/rspamd/local.d/logging.inc
+
+cat >/etc/rspamd/local.d/rmilter_headers.conf <<EOF
+use = ["x-spamd-bar", "authentication-results"]
+skip_local = false
+EOF
+chown rspamd:rspamd /etc/rspamd/local.d/rmilter_headers.conf
+
 cat >/etc/rspamd/local.d/worker-proxy.inc <<EOF
 secure_ip = "$rspamd_controller_secure_ip"
 password = "$rspamd_controller_password"

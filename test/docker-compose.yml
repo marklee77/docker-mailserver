@@ -12,7 +12,7 @@ services:
       - source: ssl_ca_cert
         target: /etc/ssl/postfix/ca.crt
     environment:
-      postfix_internal_milters: inet:clamav:1025
+      postfix_internal_milters: inet:clamav:1025 inet:rspamd:1025
       postfix_fqdn: mail.fakedomain.test
       postfix_ldap_password: password
       postfix_ldap_tls_ca_cert_file: /etc/ssl/postfix/ca.crt
@@ -72,6 +72,14 @@ services:
         source: clamav
         target: /var/lib/clamav
 
+  rspamd:
+    image: "127.0.0.1:5000/rspamd"
+    build: ../rspamd
+    volumes:
+      - type: volume
+        source: rspamd
+        target: /var/lib/rspamd
+
   solr:
     image: "127.0.0.1:5000/solr-dovecot"
     build: ../solr
@@ -128,3 +136,4 @@ secrets:
 volumes:
   clamav:
   ldap:
+  rspamd:
