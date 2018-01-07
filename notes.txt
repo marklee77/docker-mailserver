@@ -20,3 +20,5 @@
 - user configurable encryption for mail at rest, with time limitations for
   search (e.g., keep mail forever, but only searchable online for 3 months)
 - gpg-mailgate?
+
+- don't forget to set up spf/dkim/dmarc/etc when going to prod...
