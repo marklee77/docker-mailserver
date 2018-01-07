@@ -116,6 +116,10 @@ auth_mechanisms = plain login
 auth_username_format = %Lu
 disable_plaintext_auth = yes
 
+auth_cache_size = 10M
+auth_cache_ttl = 1 hour
+auth_cache_negative_ttl = 1 hour
+
 passdb {
   driver = ldap
   args = /etc/dovecot/dovecot-ldap-passdb.conf.ext
@@ -128,8 +132,11 @@ userdb {
 
 mail_uid = vmail
 mail_gid = vmail
-mail_home = /var/lib/vmail/%u
+mail_home = /var/lib/vmail/users/%u
 mail_location = mdbox:~/mdbox
+mail_attachment_dir = /var/lib/vmail/attachments
+mail_attachment_min_size = 64k
+
 mail_plugins = \$mail_plugins notify quota
 
 namespace inbox {
@@ -179,6 +186,10 @@ service auth {
   unix_listener auth-userdb {
     group = vmail
   }
+}
+
+service auth-worker {
+  user = vmail
 }
 
 # lmtp
