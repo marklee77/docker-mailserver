@@ -7,7 +7,7 @@ RUN apk add --update --no-cache \
         clamav-milter \
         freshclam && \
     rm -rf \
-         /etc/periodic/daily/logrotate \
+        /etc/periodic/daily/logrotate \
         /var/cache/apk/*
 
 COPY root/etc/clamav/*.conf /etc/clamav/
