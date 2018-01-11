@@ -1,0 +1,6 @@
+*.jbk
+*.jnl
+*.signed
+dump
+managed-keys.bind
+stats

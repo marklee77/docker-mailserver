@@ -1,0 +1,7 @@
+$ORIGIN fakedomain.test.
+$TTL 3600
+@     IN SOA   ns1.fakedomain.test. root.fakedomain.test. ( 1000 600 300 3600000 300 );
+@     IN NS    ns1.fakedomain.test.
+ns1   IN A     192.168.0.1
+test  IN A     192.168.0.2
+www   IN CNAME test

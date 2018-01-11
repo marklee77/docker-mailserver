@@ -70,26 +70,23 @@ services:
   clamav:
     image: "127.0.0.1:5000/clamav"
     build: ../clamav
-    volumes:
-      - type: volume
-        source: clamav
-        target: /var/lib/clamav
 
   rspamd:
     image: "127.0.0.1:5000/rspamd"
     build: ../rspamd
-    volumes:
-      - type: volume
-        source: rspamd
-        target: /var/lib/rspamd
 
   opendkim:
     image: "127.0.0.1:5000/opendkim"
     build: ../opendkim
+    depends_on:
+      - named
+
+  named:
+    image: marklee77/bind-authoritative
     volumes:
-      - type: volume
-        source: opendkim
-        target: /var/lib/opendkim
+      - type: bind
+        source: ./bind
+        target: /var/bind
 
   solr:
     image: "127.0.0.1:5000/solr-dovecot"
@@ -116,10 +113,6 @@ services:
         uid: '200'
         gid: '200'
         mode: 0440
-    volumes:
-      - type: volume
-        source: ldap
-        target: /data
     environment:
       fusiondirectory_admin_password: password
       slapd_admin_password: password
@@ -143,9 +136,3 @@ secrets:
     file: ./ssl/private/dovecot.key.pem
   replica_ssl_key:
     file: ./ssl/private/replica.key.pem
-
-volumes:
-  clamav:
-  ldap:
-  opendkim:
-  rspamd:
