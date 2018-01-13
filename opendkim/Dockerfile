@@ -2,6 +2,7 @@ FROM marklee77/supervisor:alpine
 LABEL mainteiner="Mark Stillwell <mark@stillwell.me>"
 
 RUN apk add --update --no-cache \
+        bind-tools \
         opendkim \
         opendkim-utils&& \
     rm -rf \
