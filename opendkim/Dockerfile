@@ -11,6 +11,9 @@ RUN apk add --update --no-cache \
     mkdir -m 0755 -p /var/lib/opendkim && \
     chown opendkim:opendkim /var/lib/opendkim
 
+COPY root/etc/opendkim/opendkim.conf /etc/opendkim/
+RUN chmod 0644 /etc/opendkim/opendkim.conf
+
 COPY root/etc/my_init.d/10-opendkim-setup /etc/my_init.d/
 RUN chmod 0755 /etc/my_init.d/10-opendkim-setup
 

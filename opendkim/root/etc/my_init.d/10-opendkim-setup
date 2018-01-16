@@ -1,42 +1,22 @@
 #!/bin/sh
 . /usr/local/share/my_init/functions.sh
 
-mkdir -p /var/run/opendkim
+: ${opendkim_sign_domains:=}
+
+mkdir -m 0770 -p /var/run/opendkim
 chown opendkim:opendkim /var/run/opendkim
 
-# set secure umask
-umask 077
-
-cat >/etc/opendkim/opendkim.conf <<EOF
-Background false
-UserID opendkim:opendkim
-PidFile /var/run/opendkim/opendkim.pid
-
-Socket inet:1025
-
-LogWhy true
-LogResults true
-Syslog true
-SyslogSuccess true
-
-Mode s
-Canonicalization relaxed/relaxed
-SignatureAlgorithm rsa-sha256
-SubDomains true
-SigningTable refile:/var/lib/opendkim/SigningTable
-KeyTable refile:/var/lib/opendkim/KeyTable
-EOF
-chown opendkim:opendkim /etc/opendkim/opendkim.conf
+mkdir -m 0770 -p /var/lib/opendkim/keys
+chown opendkim:opendkim /var/lib/opendkim/keys
 
 # set normal umask
 umask 022
 
-cat >/var/lib/opendkim/SigningTable <<EOF
-*@fakedomain.test fakedomain.test-20180109
-EOF
-chown opendkim:opendkim /var/lib/opendkim/SigningTable
+: > /var/lib/opendkim/domains.txt
+for domain in $opendkim_sign_domains; do
+    echo "$domain" >> /var/lib/opendkim/domains.txt
+done
 
-cat >/var/lib/opendkim/KeyTable <<EOF
-fakedomain.test-20180109 fakedomain.test:20180109:/var/lib/opendkim/keys/20180109.private
-EOF
-chown opendkim:opendkim /var/lib/opendkim/KeyTable
+: >/var/lib/opendkim/SigningTable
+
+: >/var/lib/opendkim/KeyTable

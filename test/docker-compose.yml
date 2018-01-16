@@ -80,6 +80,10 @@ services:
     build: ../opendkim
     depends_on:
       - named
+    secrets:
+      - source: bind_dkim_key
+        target: /etc/opendkim/Kdkim%40fakedomain.test.+163+09307.private
+        mode: 0400
 
   named:
     image: marklee77/bind-authoritative
@@ -96,7 +100,7 @@ services:
     image: logicalspark/docker-tikaserver
 
   ldap:
-    image: marklee77/fusiondirectory
+    image: marklee77/fusiondirectory:latest
     ports:
       - "80:80"
     configs:
@@ -136,3 +140,5 @@ secrets:
     file: ./ssl/private/dovecot.key.pem
   replica_ssl_key:
     file: ./ssl/private/replica.key.pem
+  bind_dkim_key:
+    file: ./dkim/Kdkim%40fakedomain.test.+163+09307.private
