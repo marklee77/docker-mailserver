@@ -1,0 +1,57 @@
+#!/bin/sh
+opendkim_home="/var/lib/opendkim"
+keep_keys_count=5
+create_keys_age_days=30
+delete_keys_age_days=90
+
+get_keys() {
+    find ./keys -maxdepth 1 -type f -name "$1-*.txt" | sort
+}
+
+get_keys_count() {
+    get_keys "$1" | wc -w
+}
+
+key_age() {
+    key_date="$(echo "$2" | sed -nr "s|\./keys/$1-(.*)\.txt|\1|p")"
+    key_timestamp="$(date -d "$key_date" +%s)"
+    today_timestamp="$(date +%s)"
+    key_age_seconds="$((today_timestamp - key_timestamp))"
+    key_age_days="$((key_age_seconds/86400))"
+    echo "$key_age_days"
+}
+
+create_today_key() {
+    today_date="$(date +%Y-%m-%d)"
+    key="./keys/$1-$today_date.txt"
+    touch "$key"
+    #opendkim-genkey --directory="./keys" --hash-algorithms=sha256 --bits=2048 --domain="$domain" --selector="$today_date" --append-domain --subdomains --restrict
+    #mv ./keys/$today_date.txt ./keys/$domain-$today_date.txt
+    #mv ./keys/$today_date.private ./keys/$domain-$today_date.private
+}
+
+: > SigningTable.new
+: > KeyTable.new
+
+domains="$(cat domains.txt)"
+
+for domain in $domains; do
+    key="$(get_keys "$domain" | tail -n1)"
+    if [ -z "$key" ] || [ $(key_age $domain $key) -gt $create_keys_age_days ]; then
+        create_today_key "$domain"
+    fi
+    while [ $(get_keys_count "$domain") -gt $keep_keys_count ]; do
+       key="$(get_keys "$domain" | head -n1)"
+       [ $(key_age $domain $key) -lt $delete_keys_age_days ] && break
+       rm "$key"
+    done
+    key="$(get_keys "$domain" | tail -n1)"
+    key_name="$(basename "$key" .txt)"
+    echo "*@$domain $key_name" >> SigningTable.new
+    key_date="$(echo "$key" | sed -nr "s|\./keys/$domain-(.*)\.txt|\1|p")"
+    echo "$key_name $domain:$key_date:$opendkim_home/keys/$key_name.private" > KeyTable.new
+done
+
+mv KeyTable.new KeyTable
+mv SigningTable.new SigningTable
+# kill -HUP opendkim?
