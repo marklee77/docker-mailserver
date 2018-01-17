@@ -1,6 +1,6 @@
 #!/bin/sh
-mkdir -p ssl
-cd ssl
+mkdir -p secrets
+cd secrets
 mkdir -p csrs certs private newcerts
 touch index.txt
 echo 1000 >serial

@@ -135,10 +135,10 @@ configs:
 
 secrets:
   ldap_ssl_key:
-    file: ./ssl/private/ldap.key.pem
+    file: ./secrets/private/ldap.key.pem
   dovecot_ssl_key:
-    file: ./ssl/private/dovecot.key.pem
+    file: ./secrets/private/dovecot.key.pem
   replica_ssl_key:
-    file: ./ssl/private/replica.key.pem
+    file: ./secrets/private/replica.key.pem
   bind_dkim_key:
-    file: ./dkim/Kdkim%40fakedomain.test.+163+09307.private
+    file: ./secrets/Kdkim%40fakedomain.test.+163+09307.private
