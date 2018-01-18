@@ -123,13 +123,13 @@ services:
 
 configs:
   ssl_ca_cert:
-    file: ./ssl/certs/ca.cert.pem
+    file: ./secrets/certs/ca.cert.pem
   ldap_ssl_cert:
-    file: ./ssl/certs/ldap.cert.pem
+    file: ./secrets/certs/ldap.cert.pem
   dovecot_ssl_cert:
-    file: ./ssl/certs/dovecot.cert.pem
+    file: ./secrets/certs/dovecot.cert.pem
   replica_ssl_cert:
-    file: ./ssl/certs/replica.cert.pem
+    file: ./secrets/certs/replica.cert.pem
   mailserver_dbinit:
     file: ./slapd/mailserver-dbinit.sh
 
