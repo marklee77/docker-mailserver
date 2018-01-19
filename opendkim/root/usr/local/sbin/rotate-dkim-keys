@@ -32,7 +32,8 @@ create_key() {
 
 delete_key() {
     echo "$2._domainkey.$1" >> invalid_keys.txt
-    rm -f "./keys/$1-$2.*"
+    rm -f "./keys/$1-$2.txt"
+    rm -f "./keys/$1-$2.private"
 }
 
 cd "$opendkim_home"
