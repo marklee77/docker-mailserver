@@ -1,11 +1,12 @@
 #!/bin/sh
 opendkim_home=/var/lib/opendkim
+pidfile=/var/run/opendkim/opendkim.pid
 keep_keys_count=5
 create_keys_age_days=30
 delete_keys_age_days=90
 
 get_keys() {
-    find ./keys -maxdepth 1 -type f -name "$1-*.txt" | sort
+    find ./keys -maxdepth 1 -type f -name "$1-*.txt" | sed -nr "s|\./keys/$1-(.*).txt|\1|p" | sort
 }
 
 count_keys() {
@@ -13,8 +14,7 @@ count_keys() {
 }
 
 key_age() {
-    key_date="$(echo "$1" | sed -nr 's|\./keys/.*-([0-9]{4}-[0-9]{2}-[0-9]{2}).txt|\1|p')"
-    key_timestamp="$(date -d "$key_date" +%s)"
+    key_timestamp="$(date -d "$1" +%s)"
     today_timestamp="$(date +%s)"
     key_age_seconds="$((today_timestamp - key_timestamp))"
     key_age_days="$((key_age_seconds/86400))"
@@ -23,11 +23,16 @@ key_age() {
 
 create_key() {
     today_date="$(date +%Y-%m-%d)"
-    opendkim-genkey --hash-algorithms=sha256 --bits=2048 --domain="$1" \
-                    --selector="$today_date" \
-                    --append-domain --subdomains --restrict
+    opendkim-genkey --hash-algorithms=sha256 --bits=2048 \
+                    --domain="$1" --append-domain --subdomains --restrict \
+                    --selector="$today_date"
     mv $today_date.txt ./keys/$1-$today_date.txt
     mv $today_date.private ./keys/$1-$today_date.private
+}
+
+delete_key() {
+    echo "$2._domainkey.$1" >> invalid_keys.txt
+    rm -f "./keys/$1-$2.*"
 }
 
 cd "$opendkim_home"
@@ -45,15 +50,13 @@ for domain in $domains; do
     while [ $(count_keys "$domain") -gt $keep_keys_count ]; do
        key="$(get_keys "$domain" | head -n1)"
        [ $(key_age $key) -lt $delete_keys_age_days ] && break
-       rm "$key"
+       delete_key "$domain" "$key"
     done
-    key="$(get_keys "$domain" | tail -n1)"
-    key_name="$(basename "$key" .txt)"
-    echo "*@$domain $key_name" >> SigningTable.new
-    key_date="$(echo "$key" | sed -nr "s|\./keys/$domain-(.*)\.txt|\1|p")"
-    echo "$key_name $domain:$key_date:$opendkim_home/keys/$key_name.private" > KeyTable.new
+    key="$(get_keys "$domain" | tail -n2 | head -n1)"
+    echo "*@$domain $domain-$key" >> SigningTable.new
+    echo "$domain-$key $domain:$key:$opendkim_home/keys/$domain-$key.private" >> KeyTable.new
 done
 
 mv KeyTable.new KeyTable
 mv SigningTable.new SigningTable
-kill -USR1 $(cat /var/run/opendkim/opendkim.pid)
+[ -f "$pidfile" ] && kill -USR1 $(cat "$pidfile")

@@ -81,9 +81,11 @@ services:
     depends_on:
       - named
     secrets:
-      - source: bind_dkim_key
-        target: /etc/opendkim/Kdkim%40fakedomain.test.+163+09307.private
+      - source: nsupdate_dkim_key
+        target: /etc/opendkim/nsupdate.key
         mode: 0400
+    environment:
+      opendkim_sign_domains: fakedomain.test fakedomain2.test
 
   named:
     image: marklee77/bind-authoritative
@@ -140,5 +142,5 @@ secrets:
     file: ./secrets/private/dovecot.key.pem
   replica_ssl_key:
     file: ./secrets/private/replica.key.pem
-  bind_dkim_key:
-    file: ./secrets/Kdkim%40fakedomain.test.+163+09307.private
+  nsupdate_dkim_key:
+    file: ./secrets/nsupdate_dkim.key
