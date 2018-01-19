@@ -85,6 +85,7 @@ services:
         target: /etc/opendkim/nsupdate.key
         mode: 0400
     environment:
+      opendkim_selector_prefix: mail-fakedomain-test
       opendkim_sign_domains: fakedomain.test fakedomain2.test
 
   named:

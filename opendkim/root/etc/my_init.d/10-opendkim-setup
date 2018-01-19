@@ -1,6 +1,7 @@
 #!/bin/sh
 . /usr/local/share/my_init/functions.sh
 
+: ${opendkim_selector_prefix:=default}
 : ${opendkim_sign_domains:=}
 
 mkdir -m 0770 -p /var/run/opendkim
@@ -16,6 +17,8 @@ umask 022
 for domain in $opendkim_sign_domains; do
     echo "$domain" >> /var/lib/opendkim/domains.txt
 done
+
+echo -n "$opendkim_selector_prefix" > /var/lib/opendkim/prefix.txt
 
 : >/var/lib/opendkim/SigningTable
 

@@ -6,11 +6,11 @@ create_keys_age_days=30
 delete_keys_age_days=90
 
 get_keys() {
-    find ./keys -maxdepth 1 -type f -name "$1-*.txt" | sed -nr "s|\./keys/$1-(.*).txt|\1|p" | sort
+    find ./keys -maxdepth 1 -type f -name "$1-$2-*.txt" | sed -nr "s|\./keys/$1-$2-(.*).txt|\1|p" | sort
 }
 
 count_keys() {
-    get_keys "$1" | wc -w
+    get_keys "$1" "$2" | wc -w
 }
 
 key_age() {
@@ -25,15 +25,15 @@ create_key() {
     today_date="$(date +%Y-%m-%d)"
     opendkim-genkey --hash-algorithms=sha256 --bits=2048 \
                     --domain="$1" --append-domain --subdomains --restrict \
-                    --selector="$today_date"
-    mv $today_date.txt ./keys/$1-$today_date.txt
-    mv $today_date.private ./keys/$1-$today_date.private
+                    --selector="$2-$today_date"
+    mv $2-$today_date.txt ./keys/$1-$2-$today_date.txt
+    mv $2-$today_date.private ./keys/$1-$2-$today_date.private
 }
 
 delete_key() {
-    echo "$2._domainkey.$1" >> invalid_keys.txt
-    rm -f "./keys/$1-$2.txt"
-    rm -f "./keys/$1-$2.private"
+    echo "$2-$3._domainkey.$1" >> invalid_keys.txt
+    rm -f "./keys/$1-$2-$3.txt"
+    rm -f "./keys/$1-$2-$3.private"
 }
 
 cd "$opendkim_home"
@@ -41,21 +41,22 @@ cd "$opendkim_home"
 : > SigningTable.new
 : > KeyTable.new
 
-domains="$(cat domains.txt)"
+domains="$(cat domains.txt 2>/dev/null)"
+prefix="$(cat prefix.txt 2>/dev/null)"
 
 for domain in $domains; do
-    key="$(get_keys "$domain" | tail -n1)"
-    if [ -z "$key" ] || [ $(key_age $key) -gt $create_keys_age_days ]; then
-        create_key "$domain"
+    key="$(get_keys "$domain" "$prefix" | tail -n1)"
+    if [ -z "$key" ] || [ $(key_age "$key") -gt $create_keys_age_days ]; then
+        create_key "$domain" "$prefix"
     fi
-    while [ $(count_keys "$domain") -gt $keep_keys_count ]; do
-       key="$(get_keys "$domain" | head -n1)"
+    while [ $(count_keys "$domain" "$prefix") -gt $keep_keys_count ]; do
+       key="$(get_keys "$domain" "$prefix" | head -n1)"
        [ $(key_age $key) -lt $delete_keys_age_days ] && break
-       delete_key "$domain" "$key"
+       delete_key "$domain" "$prefix" "$key"
     done
-    key="$(get_keys "$domain" | tail -n2 | head -n1)"
-    echo "*@$domain $domain-$key" >> SigningTable.new
-    echo "$domain-$key $domain:$key:$opendkim_home/keys/$domain-$key.private" >> KeyTable.new
+    key="$(get_keys "$domain" "$prefix" | tail -n2 | head -n1)"
+    echo "*@$domain $domain-$prefix-$key" >> SigningTable.new
+    echo "$domain-$prefix-$key $domain:$prefix-$key:$opendkim_home/keys/$domain-$prefix-$key.private" >> KeyTable.new
 done
 
 mv KeyTable.new KeyTable
