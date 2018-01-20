@@ -28,6 +28,7 @@ create_key() {
                     --selector="$2-$today_date"
     mv $2-$today_date.txt ./keys/$1-$2-$today_date.txt
     mv $2-$today_date.private ./keys/$1-$2-$today_date.private
+    chown opendkim:opendkim ./keys/*
 }
 
 delete_key() {

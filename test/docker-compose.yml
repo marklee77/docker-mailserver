@@ -81,11 +81,11 @@ services:
     depends_on:
       - named
     secrets:
-      - source: nsupdate_dkim_key
-        target: /etc/opendkim/nsupdate.key
+      - source: nsupdate_dkim_header
+        target: /var/lib/opendkim/nsupdate.txt
         mode: 0400
     environment:
-      opendkim_selector_prefix: mail-fakedomain-test
+      opendkim_selector_prefix: mail
       opendkim_sign_domains: fakedomain.test fakedomain2.test
 
   named:
@@ -143,5 +143,5 @@ secrets:
     file: ./secrets/private/dovecot.key.pem
   replica_ssl_key:
     file: ./secrets/private/replica.key.pem
-  nsupdate_dkim_key:
-    file: ./secrets/nsupdate_dkim.key
+  nsupdate_dkim_header:
+    file: ./secrets/nsupdate_dkim.txt
