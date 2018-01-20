@@ -5,8 +5,15 @@ keep_keys_count=5
 create_keys_age_days=30
 delete_keys_age_days=90
 
+tmpdir=""
+cleanup () {
+    [ -n "$tmpdir" ] && [ -d "$tmpdir" ] && rm -rf "$tmpdir"
+}
+trap cleanup EXIT HUP INT QUIT TERM
+tmpdir="$(mktemp -d)"
+
 get_keys() {
-    find ./keys -maxdepth 1 -type f -name "$1-$2-*.txt" | sed -nr "s|\./keys/$1-$2-(.*).txt|\1|p" | sort
+    find "$opendkim_home/keys" -maxdepth 1 -type f -name "$1-$2-*.txt" | sed -nr "s|.*/$1-$2-(.*).txt|\1|p" | sort
 }
 
 count_keys() {
@@ -23,27 +30,44 @@ key_age() {
 
 create_key() {
     today_date="$(date +%Y-%m-%d)"
-    opendkim-genkey --hash-algorithms=sha256 --bits=2048 \
+    opendkim-genkey --directory="$tmpdir" \
+                    --hash-algorithms=sha256 --bits=2048 \
                     --domain="$1" --append-domain --subdomains --restrict \
                     --selector="$2-$today_date"
-    mv $2-$today_date.txt ./keys/$1-$2-$today_date.txt
-    mv $2-$today_date.private ./keys/$1-$2-$today_date.private
-    chown opendkim:opendkim ./keys/*
+    dnsname="$2-$today_date._domainkey.$1"
+    data="$(<"$tmpdir/$2-$today_date.txt" tr '\n' ' ' | sed -r 's/\s+/ /g;s/.*\(\s*(.*)\).*/\1/')"
+    cp "$opendkim_home/nsupdate.txt" "$tmpdir/nsupdate.txt"
+    echo "nxrrset $dnsname in txt" >> "$tmpdir/nsupdate.txt"
+    echo "add $dnsname 86400 in txt $data" >> "$tmpdir/nsupdate.txt"
+    echo "send" >> "$tmpdir/nsupdate.txt"
+    echo "yxrrset $dnsname in txt" >> "$tmpdir/nsupdate.txt"
+    echo "send" >> "$tmpdir/nsupdate.txt"
+    if nsupdate <"$tmpdir/nsupdate.txt"; then
+        mv "$tmpdir/$2-$today_date.txt" "$opendkim_home/keys/$1-$2-$today_date.txt"
+        chown opendkim:opendkim "$opendkim_home/keys/$1-$2-$today_date.txt"
+        mv "$tmpdir/$2-$today_date.private" "$opendkim_home/keys/$1-$2-$today_date.private"
+        chown opendkim:opendkim "$opendkim_home/keys/$1-$2-$today_date.private"
+    fi
 }
 
 delete_key() {
-    echo "$2-$3._domainkey.$1" >> invalid_keys.txt
-    rm -f "./keys/$1-$2-$3.txt"
-    rm -f "./keys/$1-$2-$3.private"
+    cp "$opendkim_home/nsupdate.txt" "$tmpdir/nsupdate.txt"
+    dnsname="$2-$3._domainkey.$1"
+    echo "del $dnsname in txt" >> "$tmpdir/nsupdate.txt"
+    echo "send" >> "$tmpdir/nsupdate.txt"
+    echo "nxrrset $dnsname in txt" >> "$tmpdir/nsupdate.txt"
+    echo "send" >> "$tmpdir/nsupdate.txt"
+    if nsupdate <"$tmpdir/nsupdate.txt"; then
+        rm -f "$opendkim_home/keys/$1-$2-$3.txt"
+        rm -f "$opendkim_home/keys/$1-$2-$3.private"
+    fi
 }
 
-cd "$opendkim_home"
+: > "$tmpdir/SigningTable"
+: > "$tmpdir/KeyTable"
 
-: > SigningTable.new
-: > KeyTable.new
-
-domains="$(cat domains.txt 2>/dev/null)"
-prefix="$(cat prefix.txt 2>/dev/null)"
+domains="$(cat "$opendkim_home/domains.txt" 2>/dev/null)"
+prefix="$(cat "$opendkim_home/prefix.txt" 2>/dev/null)"
 
 for domain in $domains; do
     key="$(get_keys "$domain" "$prefix" | tail -n1)"
@@ -56,10 +80,12 @@ for domain in $domains; do
        delete_key "$domain" "$prefix" "$key"
     done
     key="$(get_keys "$domain" "$prefix" | tail -n2 | head -n1)"
-    echo "*@$domain $domain-$prefix-$key" >> SigningTable.new
-    echo "$domain-$prefix-$key $domain:$prefix-$key:$opendkim_home/keys/$domain-$prefix-$key.private" >> KeyTable.new
+    if [ -n "$key" ]; then
+        echo "*@$domain $domain-$prefix-$key" >> "$tmpdir/SigningTable"
+        echo "$domain-$prefix-$key $domain:$prefix-$key:$opendkim_home/keys/$domain-$prefix-$key.private" >> "$tmpdir/KeyTable"
+    fi
 done
 
-mv KeyTable.new KeyTable
-mv SigningTable.new SigningTable
+mv "$tmpdir/KeyTable" "$opendkim_home/KeyTable"
+mv "$tmpdir/SigningTable" "$opendkim_home/SigningTable"
 [ -f "$pidfile" ] && kill -USR1 $(cat "$pidfile")
