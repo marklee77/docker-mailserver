@@ -12,7 +12,8 @@ RUN apk add --update --no-cache \
     chown opendkim:opendkim /var/lib/opendkim
 
 COPY root/usr/local/sbin/rotate-dkim-keys /usr/local/sbin/
-RUN chmod 0755 /usr/local/sbin/rotate-dkim-keys
+RUN chmod 0755 /usr/local/sbin/rotate-dkim-keys && \
+    ln -s /usr/local/sbin/rotate-dkim-keys /etc/periodic/daily/rotate-dkim-keys
 
 COPY root/etc/opendkim/opendkim.conf /etc/opendkim/
 RUN chmod 0644 /etc/opendkim/opendkim.conf

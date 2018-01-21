@@ -20,6 +20,9 @@ done
 
 echo -n "$opendkim_selector_prefix" > /var/lib/opendkim/prefix.txt
 
-: >/var/lib/opendkim/SigningTable
-
-: >/var/lib/opendkim/KeyTable
+while true; do
+    echo "attempting to update dkim-keys if necessary..."
+    /usr/local/sbin/rotate-dkim-keys
+    ls /var/lib/opendkim/keys/*.txt >/dev/null 2>&1 && break
+    sleep 10
+done
