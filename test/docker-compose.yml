@@ -2,7 +2,7 @@ version: "3.3"
 services:
 
   postfix:
-    image: "127.0.0.1:5000/postfix"
+    image: "127.0.0.1:5000/postfix:latest"
     build: ../postfix
     depends_on:
       - clamav
@@ -14,14 +14,14 @@ services:
       - source: ssl_ca_cert
         target: /etc/ssl/postfix/ca.crt
     environment:
-      postfix_internal_milters: inet:opendkim:1025
-      postfix_external_milters: inet:clamav:1025 inet:rspamd:1025
+      postfix_internal_milters: inet:opendkim:1025 inet:rspamd:1025
+      postfix_external_milters: inet:rspamd:1025
       postfix_fqdn: mail.fakedomain.test
       postfix_ldap_password: password
       postfix_ldap_tls_ca_cert_file: /etc/ssl/postfix/ca.crt
 
   dovecot:
-    image: "127.0.0.1:5000/dovecot"
+    image: "127.0.0.1:5000/dovecot:latest"
     build: ../dovecot
     depends_on:
       - ldap
@@ -46,7 +46,7 @@ services:
       dovecot_doveadm_password: password
 
   replica:
-    image: "127.0.0.1:5000/dovecot"
+    image: "127.0.0.1:5000/dovecot:latest"
     depends_on:
       - ldap
       - solr
@@ -68,15 +68,18 @@ services:
       dovecot_doveadm_password: password
 
   clamav:
-    image: "127.0.0.1:5000/clamav"
+    image: "127.0.0.1:5000/clamav:latest"
     build: ../clamav
 
   rspamd:
-    image: "127.0.0.1:5000/rspamd"
+    image: "127.0.0.1:5000/rspamd:latest"
     build: ../rspamd
+    depends_on:
+      - clamav
+      - redis
 
   opendkim:
-    image: "127.0.0.1:5000/opendkim"
+    image: "127.0.0.1:5000/opendkim:latest"
     build: ../opendkim
     depends_on:
       - named
@@ -89,18 +92,21 @@ services:
       opendkim_sign_domains: fakedomain.test
 
   named:
-    image: marklee77/bind-authoritative
+    image: marklee77/bind-authoritative:latest
     volumes:
       - type: bind
         source: ./bind
         target: /var/bind
 
   solr:
-    image: "127.0.0.1:5000/solr-dovecot"
+    image: "127.0.0.1:5000/solr-dovecot:latest"
     build: ../solr
 
   tika:
-    image: logicalspark/docker-tikaserver
+    image: logicalspark/docker-tikaserver:latest
+
+  redis:
+    image: redis:3-alpine
 
   ldap:
     image: marklee77/fusiondirectory:latest

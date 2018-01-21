@@ -4,7 +4,6 @@ LABEL mainteiner="Mark Stillwell <mark@stillwell.me>"
 RUN apk add --update --no-cache \
         clamav \
         clamav-libunrar \
-        clamav-milter \
         freshclam && \
     rm -rf \
         /etc/periodic/daily/logrotate \

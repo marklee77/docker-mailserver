@@ -3,33 +3,65 @@
 : ${rspamd_controller_secure_ip:=}
 : ${rspamd_controller_password:=}
 
+: ${rspamd_clamav_servers:=clamav}
+: ${rspamd_redis_servers:=redis}
+
 # set secure umask
 umask 277
 
 cat >/etc/rspamd/local.d/worker-controller.inc <<EOF
-secure_ip = "$rspamd_controller_secure_ip"
-password = "$rspamd_controller_password"
-bind_socket = "*:80"
+secure_ip = "$rspamd_controller_secure_ip";
+password = "$rspamd_controller_password";
+bind_socket = "*:80";
 EOF
 chown rspamd:rspamd /etc/rspamd/local.d/worker-controller.inc
 
 # set normal umask
 umask 222
 
+cat >/etc/rspamd/local.d/antivirus.conf <<EOF
+clamav {
+  servers = "$rspamd_clamav_servers";
+}
+EOF
+chown rspamd:rspamd /etc/rspamd/local.d/antivirus.conf
+
+cat >/etc/rspamd/local.d/classifier-bayes.conf <<EOF
+backend = "redis";
+EOF
+chown rspamd:rspamd /etc/rspamd/local.d/classifier-bayes.conf
+
 cat >/etc/rspamd/local.d/logging.inc <<EOF
-type = "syslog"
+type = "syslog";
+level = "info";
 EOF
 chown rspamd:rspamd /etc/rspamd/local.d/logging.inc
 
-cat >/etc/rspamd/local.d/rmilter_headers.conf <<EOF
-use = ["x-spamd-bar", "authentication-results"]
-skip_local = false
+cat >/etc/rspamd/local.d/milter_headers.conf <<EOF
+skip_local = false;
+use = ["x-spam-level", "x-spam-status", "authentication-results"];
 EOF
-chown rspamd:rspamd /etc/rspamd/local.d/rmilter_headers.conf
+chown rspamd:rspamd /etc/rspamd/local.d/milter_headers.conf
+
+cat >/etc/rspamd/local.d/metrics.conf <<EOF
+actions {
+  greylist = 2; # lower threshold for greylisting
+}
+
+group "antivirus" {
+  symbol "CLAM_VIRUS" {
+    weight = 20.0;
+    one_shot = true;
+  }
+}
+EOF
+
+cat >/etc/rspamd/local.d/redis.conf <<EOF
+servers = "$rspamd_redis_servers";
+EOF
+chown rspamd:rspamd /etc/rspamd/local.d/redis.conf
 
 cat >/etc/rspamd/local.d/worker-proxy.inc <<EOF
-secure_ip = "$rspamd_controller_secure_ip"
-password = "$rspamd_controller_password"
-bind_socket = "*:1025"
+bind_socket = "*:1025";
 EOF
 chown rspamd:rspamd /etc/rspamd/local.d/worker-proxy.inc
