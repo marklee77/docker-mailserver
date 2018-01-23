@@ -274,7 +274,7 @@ plugin {
   fts_autoindex = yes
   fts = solr
   fts_solr = url=$dovecot_fts_solr_url/
-  #fts_tika = $dovecot_fts_tika_url/
+  $([ -n "$dovecot_fts_tika_url" ] && echo "fts_tika = $dovecot_fts_tika_url/")
 }
 EOF
 

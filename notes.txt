@@ -1,6 +1,5 @@
 - disable fail2ban and point nessus at it...
 - think about how to wire up fail2ban w/ dovecot/postfix
-- better way of extracting text from attachments
 
 - mailing list software (sympa?)
 - http://www.onyxbits.de/gnarwl/ ?
