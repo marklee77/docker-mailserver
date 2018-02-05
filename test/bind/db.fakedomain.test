@@ -1,7 +1,17 @@
+$ORIGIN .
+$TTL 3600	; 1 hour
+fakedomain.test		IN SOA	ns1.fakedomain.test. root.fakedomain.test. (
+				1002       ; serial
+				600        ; refresh (10 minutes)
+				300        ; retry (5 minutes)
+				3600000    ; expire (5 weeks 6 days 16 hours)
+				300        ; minimum (5 minutes)
+				)
+			NS	ns1.fakedomain.test.
+$ORIGIN _domainkey.fakedomain.test.
+$TTL 86400	; 1 day
 $ORIGIN fakedomain.test.
-$TTL 3600
-@     IN SOA   ns1.fakedomain.test. root.fakedomain.test. ( 1000 600 300 3600000 300 );
-@     IN NS    ns1.fakedomain.test.
-ns1   IN A     192.168.0.1
-test  IN A     192.168.0.2
-www   IN CNAME test
+$TTL 3600	; 1 hour
+ns1			A	192.168.0.1
+test			A	192.168.0.2
+www			CNAME	test
