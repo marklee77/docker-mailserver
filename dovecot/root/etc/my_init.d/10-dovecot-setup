@@ -109,8 +109,6 @@ ssl_key = <$dovecot_internal_ssl_key_file
 # not a typo, apparently no < for this param
 ssl_client_ca_file = $dovecot_ssl_client_ca_file
 
-login_trusted_networks = $dovecot_trusted_networks
-
 !include_try /etc/dovecot/secrets.conf
 !include_try /etc/dovecot/replication.conf
 !include_try /etc/dovecot/search.conf
@@ -118,6 +116,7 @@ login_trusted_networks = $dovecot_trusted_networks
 auth_mechanisms = plain login
 auth_username_format = %Lu
 disable_plaintext_auth = yes
+login_trusted_networks = $dovecot_trusted_networks
 
 auth_cache_size = 10M
 auth_cache_ttl = 1 hour
