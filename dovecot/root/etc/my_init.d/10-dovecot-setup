@@ -1,6 +1,7 @@
 #!/bin/sh
 . /usr/local/share/my_init/functions.sh
 
+: ${dovecot_trusted_networks:=$(ip route show | awk '$2 != "via" { print $1 }')}
 : ${dovecot_ssl:=required}
 : ${dovecot_ssl_dh_parameters_length:=4096}
 : ${dovecot_ssl_ca_cert_file:=/etc/ssl/certs/ca-certificates.crt}
@@ -107,6 +108,8 @@ ssl_key = <$dovecot_internal_ssl_key_file
 
 # not a typo, apparently no < for this param
 ssl_client_ca_file = $dovecot_ssl_client_ca_file
+
+login_trusted_networks = $dovecot_trusted_networks
 
 !include_try /etc/dovecot/secrets.conf
 !include_try /etc/dovecot/replication.conf
