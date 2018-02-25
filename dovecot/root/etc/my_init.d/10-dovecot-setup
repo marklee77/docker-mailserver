@@ -1,7 +1,7 @@
 #!/bin/sh
 . /usr/local/share/my_init/functions.sh
 
-: ${dovecot_trusted_networks:=$(ip route show | awk '$2 != "via" { print $1 }' ORS=' ')}
+: ${dovecot_trusted_networks:=$(ip route show | awk '$2 != "via" { print $1 }' | paste -sd' ')}
 : ${dovecot_ssl:=required}
 : ${dovecot_ssl_dh_parameters_length:=4096}
 : ${dovecot_ssl_ca_cert_file:=/etc/ssl/certs/ca-certificates.crt}
