@@ -2,6 +2,7 @@ FROM marklee77/supervisor:alpine
 LABEL maintainer="Mark Stillwell <mark@stillwell.me>"
 
 RUN apk add --update --no-cache \
+        pwgen \
         rspamd \
         rspamd-client \
         rspamd-controller \

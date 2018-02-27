@@ -1,17 +1,18 @@
 #!/bin/sh
 
-: ${rspamd_controller_secure_ip:=}
-: ${rspamd_controller_password:=}
-
 : ${rspamd_clamav_servers:=clamav}
 : ${rspamd_redis_servers:=redis}
+
+file=/run/secrets/rspamd_controller_password
+[ -f "$file" ] && rspamd_controller_password="$(cat "$file")"
+
+: ${rspamd_controller_password:=$(pwgen -s1 32)}
 
 # set secure umask
 umask 277
 
 cat >/etc/rspamd/local.d/worker-controller.inc <<EOF
-secure_ip = "$rspamd_controller_secure_ip";
-password = "$rspamd_controller_password";
+password = "$(rspamadm pw -p "$rspamd_controller_password")";
 bind_socket = "*:80";
 EOF
 chown rspamd:rspamd /etc/rspamd/local.d/worker-controller.inc
