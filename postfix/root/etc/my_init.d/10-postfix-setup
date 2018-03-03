@@ -158,7 +158,7 @@ submission inet  n       -       n       -       -       smtpd
   -o smtpd_milters=$postfix_internal_milters
   -o smtpd_recipient_restrictions=
   -o smtpd_reject_unlisted_recipient=no
-  -o smtpd_relay_restrictions=permit_mynetworks,permit_sasl_authenticated,reject
+  -o smtpd_relay_restrictions=permit_sasl_authenticated,reject
   -o smtpd_sasl_auth_enable=yes
   -o smtpd_sender_restrictions=
   -o smtpd_tls_eecdh_grade=ultra
@@ -187,6 +187,16 @@ virtual    unix  -       n       n       -       -       virtual
 lmtp       unix  -       -       n       -       -       lmtp
 anvil      unix  -       -       n       -       1       anvil
 scache     unix  -       -       n       -       1       scache
+:10025     inet  n       -       n       -       -       smtpd
+  -o milter_macro_daemon_name=ORIGINATING
+  -o syslog_name=postfix/localsubmission
+  -o smtpd_client_restrictions=
+  -o smtpd_helo_restrictions=
+  -o smtpd_milters=$postfix_internal_milters
+  -o smtpd_recipient_restrictions=
+  -o smtpd_reject_unlisted_recipient=no
+  -o smtpd_relay_restrictions=permit_mynetworks,reject
+  -o smtpd_sender_restrictions=
 EOF
 
 cat >/etc/postfix/main.cf <<EOF
