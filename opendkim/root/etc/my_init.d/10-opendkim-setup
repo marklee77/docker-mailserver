@@ -3,6 +3,7 @@
 
 : ${opendkim_selector_prefix:=default}
 : ${opendkim_sign_domains:=}
+: ${opendkim_internal_networks:=$(ip route show | awk '$2 != "via" { print $1 }' | paste -sd' ')}
 
 mkdir -m 0770 -p /var/run/opendkim
 chown opendkim:opendkim /var/run/opendkim
@@ -26,3 +27,11 @@ while true; do
     ls /var/lib/opendkim/keys/*.txt >/dev/null 2>&1 && break
     sleep 10
 done
+
+file=/var/lib/opendkim/InternalHosts
+if ! [ -f "$file" ]; then
+    echo "127.0.0.1" > "$file"
+    for network in $opendkim_internal_networks; do
+        echo "$network" >> "$file"
+    done
+fi
