@@ -158,7 +158,7 @@ submission inet  n       -       n       -       -       smtpd
   -o smtpd_milters=$postfix_internal_milters
   -o smtpd_recipient_restrictions=
   -o smtpd_reject_unlisted_recipient=no
-  -o smtpd_relay_restrictions=permit_sasl_authenticated,reject
+  -o smtpd_relay_restrictions=permit_mynetworks,permit_sasl_authenticated,reject
   -o smtpd_sasl_auth_enable=yes
   -o smtpd_sender_restrictions=
   -o smtpd_tls_eecdh_grade=ultra
